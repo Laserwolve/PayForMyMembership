@@ -36,7 +36,7 @@ jobs:
         BUDGET: ${{ github.event.inputs.osrs_budget || '50m' }}
         INCLUDE_MEMBERS: ${{ github.event.inputs.osrs_include_members || 'true' }}
         GITHUB_ACTIONS: 'true'
-      run: node osrs-github-runner.js
+      run: node osrs.js
       
     - name: Upload OSRS Results
       uses: actions/upload-artifact@v4

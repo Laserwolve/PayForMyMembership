@@ -5,9 +5,32 @@
 
 import * as readline from 'readline';
 import fs from 'fs';
+import { createRequire } from 'module';
+
+// Load package.json for app name and version
+const require = createRequire(import.meta.url);
+const pkg = require('./package.json');
 
 // OSRS constants
-const USER_AGENT = 'PayForMyMembership/1.0.0 (laserwolve@gmail.com; +https://github.com/Laserwolve/PayForMyMembership)';
+// Dynamically construct USER_AGENT from GitHub Actions environment
+const getGitHubEmail = () => {
+  const actor = process.env.GITHUB_ACTOR;
+  if (!actor) {
+    throw new Error('GITHUB_ACTOR environment variable not set');
+  }
+  return `${actor}@users.noreply.github.com`;
+};
+
+const getRepoUrl = () => {
+  const serverUrl = process.env.GITHUB_SERVER_URL;
+  const repository = process.env.GITHUB_REPOSITORY;
+  if (!serverUrl || !repository) {
+    throw new Error('GitHub environment variables (GITHUB_SERVER_URL, GITHUB_REPOSITORY) not set');
+  }
+  return `${serverUrl}/${repository}`;
+};
+
+const USER_AGENT = `${pkg.name}/${pkg.version} (${getGitHubEmail()}; +${getRepoUrl()})`;
 
 // ===== API FUNCTIONS =====
 
@@ -420,7 +443,7 @@ export async function runOSRSAutomated(budgetInput, includeMembers = true, optio
   logMessage('🚀 OSRS Investment Analyzer (Automated)');
   logMessage('======================================');
   
-  const budget = parseGPAmount(budgetInput);
+  const budget = parseGoldAmount(budgetInput);
   
   if (isNaN(budget) || budget <= 0) {
     throw new Error('Invalid budget amount');
@@ -522,4 +545,83 @@ export async function runOSRSAutomated(budgetInput, includeMembers = true, optio
     budgetString: budgetInput,
     includeMembers: includeMembers
   };
+}
+
+// ===== GITHUB ACTIONS RUNNER =====
+
+/**
+ * Main entry point when run directly (e.g., node osrs.js or GitHub Actions)
+ */
+async function main() {
+  const BUDGET = process.env.BUDGET || '50m';
+  const INCLUDE_MEMBERS = process.env.INCLUDE_MEMBERS === 'true';
+  const IS_GITHUB_ACTIONS = process.env.GITHUB_ACTIONS === 'true';
+
+  console.log('🚀 OSRS GitHub Actions Analysis');
+  console.log('===============================');
+  console.log(`Budget: ${BUDGET}`);
+  console.log(`Include Members: ${INCLUDE_MEMBERS}`);
+  console.log(`Environment: ${IS_GITHUB_ACTIONS ? 'GitHub Actions' : 'Local'}`);
+  console.log('');
+
+  const startTime = Date.now();
+  
+  try {
+    const results = await runOSRSAutomated(BUDGET, INCLUDE_MEMBERS, {
+      isGitHubActions: IS_GITHUB_ACTIONS,
+      logFile: 'osrs-analysis.log'
+    });
+    
+    const endTime = Date.now();
+    const analysisTime = Math.round((endTime - startTime) / 1000);
+    
+    // Add metadata
+    results.metadata = {
+      budget: BUDGET,
+      includeMembers: INCLUDE_MEMBERS,
+      itemsAnalyzed: results.totalAnalyzed || 0,
+      analysisTime: `${Math.floor(analysisTime / 60)}m ${analysisTime % 60}s`,
+      timestamp: new Date().toISOString(),
+      environment: 'GitHub Actions'
+    };
+    
+    // Save results to JSON
+    fs.writeFileSync('osrs-results.json', JSON.stringify(results, null, 2));
+    
+    console.log('\n✅ OSRS Analysis Complete!');
+    console.log(`Total time: ${results.metadata.analysisTime}`);
+    console.log(`Items analyzed: ${results.metadata.itemsAnalyzed}`);
+    console.log('Results saved to osrs-results.json');
+    
+    // Log top 3 for GitHub Actions summary
+    if (results.recommendations && results.recommendations.length > 0) {
+      console.log('\n🏆 TOP 3 OSRS RECOMMENDATIONS:');
+      results.recommendations.slice(0, 3).forEach((item, index) => {
+        console.log(`${index + 1}. ${item.name} - Score: ${item.investmentScore}/100`);
+      });
+    }
+    
+  } catch (error) {
+    console.error('❌ OSRS Analysis failed:', error.message);
+    
+    // Save error info
+    const errorResult = {
+      error: error.message,
+      metadata: {
+        budget: BUDGET,
+        includeMembers: INCLUDE_MEMBERS,
+        timestamp: new Date().toISOString(),
+        environment: 'GitHub Actions',
+        failed: true
+      }
+    };
+    
+    fs.writeFileSync('osrs-results.json', JSON.stringify(errorResult, null, 2));
+    process.exit(1);
+  }
+}
+
+// Run main function if this file is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
 }

@@ -30,7 +30,7 @@ jobs:
       env:
         BUDGET: ${{ github.event.inputs.eve_budget || '1b' }}
         GITHUB_ACTIONS: 'true'
-      run: node eve-github-runner.js
+      run: node eve.js
       
     - name: Upload EVE Results
       uses: actions/upload-artifact@v4

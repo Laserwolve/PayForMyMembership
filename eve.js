@@ -4,10 +4,35 @@
  */
 
 import * as readline from 'readline';
+import fs from 'fs';
+import { createRequire } from 'module';
+
+// Load package.json for app name and version
+const require = createRequire(import.meta.url);
+const pkg = require('./package.json');
 
 // EVE Online constants
 const JITA_REGION_ID = 10000002; // The Forge (Jita)
-const USER_AGENT = 'PayForMyMembership/1.0.0 (laserwolve@gmail.com; EVE: Foggle Lopperbottom; +https://github.com/Laserwolve/PayForMyMembership)';
+
+// Dynamically construct USER_AGENT from GitHub Actions environment
+const getGitHubEmail = () => {
+  const actor = process.env.GITHUB_ACTOR;
+  if (!actor) {
+    throw new Error('GITHUB_ACTOR environment variable not set');
+  }
+  return `${actor}@users.noreply.github.com`;
+};
+
+const getRepoUrl = () => {
+  const serverUrl = process.env.GITHUB_SERVER_URL;
+  const repository = process.env.GITHUB_REPOSITORY;
+  if (!serverUrl || !repository) {
+    throw new Error('GitHub environment variables (GITHUB_SERVER_URL, GITHUB_REPOSITORY) not set');
+  }
+  return `${serverUrl}/${repository}`;
+};
+
+const USER_AGENT = `${pkg.name}/${pkg.version} (${getGitHubEmail()}; +${getRepoUrl()})`;
 
 // ===== API FUNCTIONS =====
 
@@ -596,4 +621,80 @@ export async function runEVEAutomated(budgetInput, maxItems = null, options = {}
     budget: budget,
     budgetString: budgetInput
   };
+}
+
+// ===== GITHUB ACTIONS RUNNER =====
+
+/**
+ * Main entry point when run directly (e.g., node eve.js or GitHub Actions)
+ */
+async function main() {
+  const BUDGET = process.env.BUDGET || '1b';
+  const IS_GITHUB_ACTIONS = process.env.GITHUB_ACTIONS === 'true';
+
+  console.log('🚀 EVE Online GitHub Actions Analysis');
+  console.log('====================================');
+  console.log(`Budget: ${BUDGET}`);
+  console.log(`Analyzing ALL available items`);
+  console.log(`Environment: ${IS_GITHUB_ACTIONS ? 'GitHub Actions' : 'Local'}`);
+  console.log('');
+
+  const startTime = Date.now();
+  
+  try {
+    const results = await runEVEAutomated(BUDGET, null, {
+      isGitHubActions: IS_GITHUB_ACTIONS,
+      logFile: 'eve-analysis.log'
+    });
+    
+    const endTime = Date.now();
+    const analysisTime = Math.round((endTime - startTime) / 1000);
+    
+    // Add metadata
+    results.metadata = {
+      budget: BUDGET,
+      itemsAnalyzed: results.totalAnalyzed || 0,
+      analysisTime: `${Math.floor(analysisTime / 60)}m ${analysisTime % 60}s`,
+      timestamp: new Date().toISOString(),
+      environment: 'GitHub Actions'
+    };
+    
+    // Save results to JSON
+    fs.writeFileSync('eve-results.json', JSON.stringify(results, null, 2));
+    
+    console.log('\n✅ Analysis Complete!');
+    console.log(`Total time: ${results.metadata.analysisTime}`);
+    console.log(`Items analyzed: ${results.metadata.itemsAnalyzed}`);
+    console.log('Results saved to eve-results.json');
+    
+    // Log top 3 for GitHub Actions summary
+    if (results.recommendations && results.recommendations.length > 0) {
+      console.log('\n🏆 TOP 3 RECOMMENDATIONS:');
+      results.recommendations.slice(0, 3).forEach((item, index) => {
+        console.log(`${index + 1}. ${item.name} - Score: ${item.investmentScore}/100`);
+      });
+    }
+    
+  } catch (error) {
+    console.error('❌ Analysis failed:', error.message);
+    
+    // Save error info
+    const errorResult = {
+      error: error.message,
+      metadata: {
+        budget: BUDGET,
+        timestamp: new Date().toISOString(),
+        environment: 'GitHub Actions',
+        failed: true
+      }
+    };
+    
+    fs.writeFileSync('eve-results.json', JSON.stringify(errorResult, null, 2));
+    process.exit(1);
+  }
+}
+
+// Run main function if this file is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
 }
