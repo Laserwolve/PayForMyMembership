@@ -5,6 +5,9 @@
 
 import * as readline from 'readline';
 
+// OSRS constants
+const USER_AGENT = 'PayForMyMembership/1.0.0 (laserwolve@gmail.com; +https://github.com/Laserwolve/PayForMyMembership)';
+
 // ===== API FUNCTIONS =====
 
 /**
@@ -16,7 +19,12 @@ async function fetchPriceHistory(itemId) {
   const url = `https://secure.runescape.com/m=itemdb_oldschool/api/graph/${itemId}.json`;
   
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': USER_AGENT
+      }
+    });
     if (!response.ok) {
       throw new Error(`Failed to fetch item ${itemId}: ${response.status}`);
     }
@@ -38,7 +46,12 @@ async function fetchItemDatabase() {
   console.log('Fetching item database...');
   
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': USER_AGENT
+      }
+    });
     if (!response.ok) {
       throw new Error(`Failed to fetch item database: ${response.status}`);
     }
@@ -345,7 +358,7 @@ export async function runOSRS() {
   // Fetch and analyze each item with proper rate limiting
   for (let i = 0; i < itemsToAnalyze.length; i++) {
     const item = itemsToAnalyze[i];
-    process.stdout.write(`Fetching ${item.name} (${i + 1}/${itemsToAnalyze.length})...\r`);
+    process.stdout.write(`\x1b[2K\rFetching ${item.name} (${i + 1}/${itemsToAnalyze.length})...`);
     
     const priceData = await fetchPriceHistory(item.id);
     

@@ -7,7 +7,7 @@ import * as readline from 'readline';
 
 // EVE Online constants
 const JITA_REGION_ID = 10000002; // The Forge (Jita)
-const USER_AGENT = 'PayForMyMembership/1.0.0 (+https://github.com/Laserwolve/BuyMeABond)';
+const USER_AGENT = 'PayForMyMembership/1.0.0 (laserwolve@gmail.com; EVE: Foggle Lopperbottom; +https://github.com/Laserwolve/PayForMyMembership)';
 
 // ===== API FUNCTIONS =====
 
@@ -418,7 +418,7 @@ export async function runEVE() {
   for (let i = 0; i < shuffledItems.length && results.length < itemCount; i++) {
     const item = shuffledItems[i];
     itemsChecked++;
-    process.stdout.write(`Checking ${item.name} (${itemsChecked} checked, ${results.length}/${itemCount} found)...\r`);
+    process.stdout.write(`\x1b[2K\rChecking ${item.name} (${itemsChecked} checked, ${results.length}/${itemCount} found)...`);
     
     const history = await fetchMarketHistory(JITA_REGION_ID, item.id);
     
