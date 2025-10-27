@@ -9,13 +9,11 @@ on:
       eve_budget:
         description: 'EVE ISK budget (e.g., 1b, 500m)'
         required: false
-        default: '1b'
 
 jobs:
   eve-analysis:
     runs-on: ubuntu-latest
     timeout-minutes: 300  # 5 hours max for EVE
-    if: vars.ENABLE_EVE_NIGHTLY != 'false'
     
     steps:
     - name: Checkout repository
@@ -45,7 +43,7 @@ jobs:
   send-email-report:
     runs-on: ubuntu-latest
     needs: [eve-analysis]
-    if: always() && vars.ENABLE_EVE_EMAIL != 'false'
+    if: always()
     
     steps:
     - name: Checkout repository

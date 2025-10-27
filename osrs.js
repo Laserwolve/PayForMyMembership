@@ -457,7 +457,7 @@ export async function runOSRSAutomated(budgetInput, includeMembers = true, optio
 
   // Fetch item data
   logMessage('Fetching OSRS item database...');
-  const itemsData = await fetchItemsData();
+  const itemsData = await fetchItemDatabase();
   
   if (!itemsData) {
     throw new Error('Failed to fetch OSRS item data');
@@ -516,10 +516,10 @@ export async function runOSRSAutomated(budgetInput, includeMembers = true, optio
       logMessage(`Progress: ${itemsChecked}/${itemsToAnalyze.length} (${successfulAnalyses} analyzed)`);
     }
     
-    const priceData = await fetchItemPriceData(item.id);
+    const priceData = await fetchPriceHistory(item.id);
     
-    if (priceData && priceData.daily) {
-      const analysis = analyzeItem(priceData.daily, item, budget);
+    if (priceData) {
+      const analysis = analyzeItem(priceData, item, budget);
       
       if (analysis) {
         results.push(analysis);
