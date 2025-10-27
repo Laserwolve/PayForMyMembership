@@ -1,0 +1,200 @@
+name: EVE Online Market Analysisname: EVE Online Market Analysisname: EVE Online Market Analysis
+
+
+
+on:
+
+  schedule:
+
+    # Run daily at 3:00 AM UTC (offset from OSRS to spread load)on:on:
+
+    - cron: '0 3 * * *'
+
+  workflow_dispatch:  schedule:  schedule:
+
+    inputs:
+
+      eve_budget:    # Run daily at 3:00 AM UTC (offset from OSRS to spread load)    # Run daily at 12:00 UTC
+
+        description: 'EVE ISK budget (e.g., 1b, 500m)'
+
+        required: false    - cron: '0 3 * * *'    - cron: '0 12 * * *'
+
+        default: '1b'
+
+  workflow_dispatch:  workflow_dispatch:
+
+jobs:
+
+  eve-analysis:    inputs:    inputs:
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 360  # 6 hours max for EVE (analyzing all items)      eve_budget:      budget:
+
+    if: vars.ENABLE_EVE_ANALYSIS != 'false'
+
+            description: 'EVE ISK budget (e.g., 1b, 500m)'        description: 'ISK budget (e.g., 10b, 500m)'
+
+    steps:
+
+    - name: Checkout repository        required: false        required: false
+
+      uses: actions/checkout@v4
+
+              default: '1b'        default: '1b'
+
+    - name: Setup Node.js
+
+      uses: actions/setup-node@v4      max_items:
+
+      with:
+
+        node-version: '18'jobs:        description: 'Maximum items to analyze'
+
+        
+
+    - name: Run EVE Analysis  eve-analysis:        required: false
+
+      env:
+
+        BUDGET: ${{ github.event.inputs.eve_budget || '1b' }}    runs-on: ubuntu-latest        default: '2000'
+
+        GITHUB_ACTIONS: 'true'
+
+      run: node eve-github-runner.js    timeout-minutes: 360  # 6 hours max for EVE (analyzing all items)
+
+      
+
+    - name: Upload EVE Results    if: vars.ENABLE_EVE_ANALYSIS != 'false'jobs:
+
+      uses: actions/upload-artifact@v4
+
+      if: always()      eve-analysis:
+
+      with:
+
+        name: eve-analysis-results-${{ github.run_number }}    steps:    runs-on: ubuntu-latest
+
+        path: |
+
+          eve-results.json    - name: Checkout repository    timeout-minutes: 300  # 5 hours max
+
+          eve-analysis.log
+
+        retention-days: 30      uses: actions/checkout@v4    
+
+
+
+    - name: Send EVE Email Report          steps:
+
+      uses: dawidd6/action-send-mail@v3
+
+      if: success() && vars.ENABLE_EMAIL_REPORTS != 'false'    - name: Setup Node.js    - name: Checkout repository
+
+      with:
+
+        server_address: smtp.gmail.com      uses: actions/setup-node@v4      uses: actions/checkout@v4
+
+        server_port: 587
+
+        username: ${{ secrets.EMAIL_USERNAME }}      with:      
+
+        password: ${{ secrets.EMAIL_PASSWORD }}
+
+        subject: "EVE Online Market Analysis Report - ${{ github.run_number }}"        node-version: '18'    - name: Setup Node.js
+
+        to: laserwolve@gmail.com
+
+        from: EVE Analysis <${{ secrets.EMAIL_USERNAME }}>              uses: actions/setup-node@v4
+
+        body: |
+
+          EVE Online Market Analysis Complete!    - name: Run EVE Analysis      with:
+
+          
+
+          Budget: ${{ env.BUDGET }}      env:        node-version: '18'
+
+          Market: Jita (The Forge)
+
+          Run Number: ${{ github.run_number }}        BUDGET: ${{ github.event.inputs.eve_budget || '1b' }}        
+
+          
+
+          Check the artifacts for detailed results, or view the workflow logs for a summary.        GITHUB_ACTIONS: 'true'    - name: Install dependencies
+
+          
+
+          GitHub Actions run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}      run: node eve-github-runner.js      run: npm install
+
+        attachments: eve-results.json
+
+        priority: normal            
+
+    - name: Upload EVE Results    - name: Run EVE Analysis
+
+      uses: actions/upload-artifact@v4      env:
+
+      if: always()        BUDGET: ${{ github.event.inputs.budget || '1b' }}
+
+      with:        MAX_ITEMS: ${{ github.event.inputs.max_items || '2000' }}
+
+        name: eve-analysis-results-${{ github.run_number }}        GITHUB_ACTIONS: 'true'
+
+        path: |      run: node eve-github-runner.js
+
+          eve-results.json      
+
+          eve-analysis.log    - name: Upload results
+
+        retention-days: 30      uses: actions/upload-artifact@v4
+
+      if: always()
+
+    - name: Send EVE Email Report      with:
+
+      uses: dawidd6/action-send-mail@v3        name: eve-analysis-results
+
+      if: success() && vars.ENABLE_EMAIL_REPORTS != 'false'        path: |
+
+      with:          eve-results.json
+
+        server_address: smtp.gmail.com          eve-analysis.log
+
+        server_port: 587        retention-days: 30
+
+        username: ${{ secrets.EMAIL_USERNAME }}        
+
+        password: ${{ secrets.EMAIL_PASSWORD }}    - name: Create Summary
+
+        subject: "EVE Online Market Analysis Report - ${{ github.run_number }}"      if: always()
+
+        to: laserwolve@gmail.com      run: |
+
+        from: EVE Analysis <${{ secrets.EMAIL_USERNAME }}>        if [ -f eve-results.json ]; then
+
+        body: |          echo "## EVE Online Investment Analysis Results" >> $GITHUB_STEP_SUMMARY
+
+          EVE Online Market Analysis Complete!          echo "" >> $GITHUB_STEP_SUMMARY
+
+                    echo "**Budget:** ${{ env.BUDGET }}" >> $GITHUB_STEP_SUMMARY
+
+          Budget: ${{ env.BUDGET }}          echo "**Items Analyzed:** $(jq '.metadata.itemsAnalyzed // 0' eve-results.json)" >> $GITHUB_STEP_SUMMARY
+
+          Market: Jita (The Forge)          echo "**Analysis Time:** $(jq -r '.metadata.analysisTime // "N/A"' eve-results.json)" >> $GITHUB_STEP_SUMMARY
+
+          Run Number: ${{ github.run_number }}          echo "" >> $GITHUB_STEP_SUMMARY
+
+                    echo "### Top 3 Recommendations:" >> $GITHUB_STEP_SUMMARY
+
+          Check the artifacts for detailed results, or view the workflow logs for a summary.          echo "" >> $GITHUB_STEP_SUMMARY
+
+                    jq -r '.recommendations[]? | "**\(.name)** - Score: \(.investmentScore)/100, Price: \(.currentPrice | tonumber | . / 1000000 | floor)M ISK"' eve-results.json | head -3 >> $GITHUB_STEP_SUMMARY
+
+          GitHub Actions run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}        else
+
+        attachments: eve-results.json          echo "## Analysis Failed" >> $GITHUB_STEP_SUMMARY
+
+        priority: normal          echo "No results file generated. Check logs for errors." >> $GITHUB_STEP_SUMMARY
+        fi
