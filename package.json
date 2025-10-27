@@ -5,7 +5,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "osrs-github": "node osrs-github-runner.js",
+    "eve-github": "node eve-github-runner.js",
+    "generate-report": "node generate-email-report.js"
   },
   "keywords": ["osrs", "eve-online", "investment", "price-analysis", "trading"],
   "author": "",

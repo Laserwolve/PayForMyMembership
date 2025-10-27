@@ -372,7 +372,9 @@ function parseISKAmount(input) {
 /**
  * Main application entry point for EVE Online analyzer
  */
-export async function runEVE() {
+export async function runEVE(budgetInput = null, maxItems = null, options = {}) {
+  const { isGitHubActions = false, logFile = null } = options;
+  
   console.log('🚀 EVE Online Investment Analyzer (Jita)');
   console.log('=====================================');
   console.log('Strategy: High-volatility, high-ROI opportunities\n');
@@ -385,31 +387,58 @@ export async function runEVE() {
     process.exit(1);
   }
   
-  // Get ISK budget
-  const budgetInput = await promptUser('Enter your ISK budget: ');
-  const budget = parseISKAmount(budgetInput);
-  
-  if (isNaN(budget) || budget <= 0) {
-    console.error('Invalid budget amount. Please enter a positive number.');
-    process.exit(1);
+  // Get ISK budget (from parameter or prompt)
+  let budget;
+  if (budgetInput) {
+    budget = parseISKAmount(budgetInput);
+  } else {
+    const inputBudget = await promptUser('Enter your ISK budget: ');
+    budget = parseISKAmount(inputBudget);
   }
   
-  // Ask how many items to analyze
-  const itemCountInput = await promptUser(`How many items to analyze? (max ${TRADEABLE_ITEMS.length}): `);
-  const itemCount = Math.min(parseInt(itemCountInput), TRADEABLE_ITEMS.length);
+  if (isNaN(budget) || budget <= 0) {
+    if (isGitHubActions) {
+      throw new Error('Invalid budget amount');
+    } else {
+      console.error('Invalid budget amount. Please enter a positive number.');
+      process.exit(1);
+    }
+  }
+  
+  // Ask how many items to analyze (from parameter or prompt)
+  let itemCount;
+  if (maxItems) {
+    itemCount = Math.min(maxItems, TRADEABLE_ITEMS.length);
+  } else {
+    const itemCountInput = await promptUser(`How many items to analyze? (max ${TRADEABLE_ITEMS.length}): `);
+    itemCount = Math.min(parseInt(itemCountInput), TRADEABLE_ITEMS.length);
+  }
   
   if (isNaN(itemCount) || itemCount <= 0) {
-    console.error('Invalid number of items. Please enter a positive number.');
-    process.exit(1);
+    if (isGitHubActions) {
+      throw new Error('Invalid number of items');
+    } else {
+      console.error('Invalid number of items. Please enter a positive number.');
+      process.exit(1);
+    }
   }
   
   // Randomly select items to analyze
   const shuffledItems = [...TRADEABLE_ITEMS].sort(() => Math.random() - 0.5);
   
-  console.log(`\nBudget: ${budget.toLocaleString()} ISK`);
-  console.log(`Market: Jita (The Forge)`);
-  console.log(`Target items: ${itemCount}`);
-  console.log(`Analyzing items...\n`);
+  const logMessage = (message) => {
+    console.log(message);
+    if (logFile) {
+      const timestamp = new Date().toISOString();
+      require('fs').appendFileSync(logFile, `${timestamp}: ${message}\n`);
+    }
+  };
+
+  logMessage(`\nBudget: ${budget.toLocaleString()} ISK`);
+  logMessage(`Market: Jita (The Forge)`);
+  logMessage(`Target items: ${itemCount}`);
+  logMessage(`Mode: ${isGitHubActions ? 'GitHub Actions' : 'Interactive'}`);
+  logMessage(`Analyzing items...\n`);
   
   const results = [];
   let itemsChecked = 0;
@@ -464,4 +493,101 @@ export async function runEVE() {
   });
   
   console.log('\n');
+}
+
+/**
+ * Automated EVE analysis for GitHub Actions
+ * @param {string} budgetInput - ISK budget string
+ * @param {number} maxItems - Maximum items to analyze
+ * @param {Object} options - Configuration options
+ * @returns {Promise<Object>} Analysis results
+ */
+export async function runEVEAutomated(budgetInput, maxItems = 1000, options = {}) {
+  const { isGitHubActions = false, logFile = null } = options;
+  
+  const logMessage = (message) => {
+    console.log(message);
+    if (logFile) {
+      const timestamp = new Date().toISOString();
+      require('fs').appendFileSync(logFile, `${timestamp}: ${message}\n`);
+    }
+  };
+
+  logMessage('🚀 EVE Online Investment Analyzer (Automated)');
+  logMessage('============================================');
+  
+  const budget = parseISKAmount(budgetInput);
+  
+  if (isNaN(budget) || budget <= 0) {
+    throw new Error('Invalid budget amount');
+  }
+
+  logMessage(`Budget: ${budget.toLocaleString()} ISK`);
+  logMessage(`Max Items: ${maxItems}`);
+  logMessage(`Mode: ${isGitHubActions ? 'GitHub Actions' : 'Local'}`);
+  logMessage('');
+
+  // Fetch all tradeable items in Jita
+  logMessage('Fetching items traded in Jita...');
+  const TRADEABLE_ITEMS = await fetchJitaItems();
+  
+  if (TRADEABLE_ITEMS.length === 0) {
+    throw new Error('Failed to load tradeable items');
+  }
+
+  logMessage(`✅ Loaded ${TRADEABLE_ITEMS.length} tradeable items`);
+
+  // Randomly select items to analyze
+  const shuffledItems = [...TRADEABLE_ITEMS].sort(() => Math.random() - 0.5);
+  const itemsToAnalyze = shuffledItems.slice(0, Math.min(maxItems, TRADEABLE_ITEMS.length));
+
+  logMessage(`Analyzing ${itemsToAnalyze.length} items...`);
+  logMessage('');
+
+  const results = [];
+  let itemsChecked = 0;
+  let successfulAnalyses = 0;
+
+  for (let i = 0; i < itemsToAnalyze.length; i++) {
+    const item = itemsToAnalyze[i];
+    itemsChecked++;
+    
+    // Progress update every 100 items
+    if (itemsChecked % 100 === 0 || itemsChecked === itemsToAnalyze.length) {
+      logMessage(`Progress: ${itemsChecked}/${itemsToAnalyze.length} (${successfulAnalyses} analyzed)`);
+    }
+    
+    const history = await fetchMarketHistory(JITA_REGION_ID, item.id);
+    
+    if (history && history.length > 0) {
+      const analysis = analyzeItem(history, item, budget);
+      
+      if (analysis) {
+        // Volume filter
+        const volumeThreshold = analysis.volume * 0.1;
+        
+        if (analysis.unitsCanBuy <= volumeThreshold) {
+          results.push(analysis);
+          successfulAnalyses++;
+        }
+      }
+    }
+    
+    // Rate limiting
+    await delay(1000);
+  }
+
+  logMessage('');
+  logMessage(`✅ EVE Analysis Complete! Analyzed ${successfulAnalyses} items`);
+
+  // Sort by investment score
+  results.sort((a, b) => parseFloat(b.investmentScore) - parseFloat(a.investmentScore));
+
+  return {
+    recommendations: results.slice(0, 10),
+    totalAnalyzed: successfulAnalyses,
+    totalChecked: itemsChecked,
+    budget: budget,
+    budgetString: budgetInput
+  };
 }

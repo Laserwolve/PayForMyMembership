@@ -1,0 +1,132 @@
+name: Daily Market Analysis
+
+on:
+  schedule:
+    # Run daily at 2:00 AM UTC (adjust for your timezone)
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      osrs_budget:
+        description: 'OSRS budget (e.g., 10m, 500k, 2b)'
+        required: false
+        default: '50m'
+      osrs_items:
+        description: 'OSRS items to analyze'
+        required: false
+        default: '500'
+      eve_budget:
+        description: 'EVE ISK budget (e.g., 1b, 500m)'
+        required: false
+        default: '1b'
+      eve_items:
+        description: 'EVE items to analyze'
+        required: false
+        default: '1000'
+
+jobs:
+  osrs-analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180  # 3 hours max for OSRS
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Run OSRS Analysis
+      env:
+        BUDGET: ${{ github.event.inputs.osrs_budget || '50m' }}
+        MAX_ITEMS: ${{ github.event.inputs.osrs_items || '500' }}
+        GITHUB_ACTIONS: 'true'
+      run: node osrs-github-runner.js
+      
+    - name: Upload OSRS Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: osrs-analysis-results
+        path: |
+          osrs-results.json
+          osrs-analysis.log
+        retention-days: 30
+
+  eve-analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300  # 5 hours max for EVE
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Run EVE Analysis
+      env:
+        BUDGET: ${{ github.event.inputs.eve_budget || '1b' }}
+        MAX_ITEMS: ${{ github.event.inputs.eve_items || '1000' }}
+        GITHUB_ACTIONS: 'true'
+      run: node eve-github-runner.js
+      
+    - name: Upload EVE Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: eve-analysis-results
+        path: |
+          eve-results.json
+          eve-analysis.log
+        retention-days: 30
+
+  send-email-report:
+    runs-on: ubuntu-latest
+    needs: [osrs-analysis, eve-analysis]
+    if: always()
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Download OSRS Results
+      uses: actions/download-artifact@v4
+      with:
+        name: osrs-analysis-results
+        path: ./results/osrs/
+      continue-on-error: true
+        
+    - name: Download EVE Results
+      uses: actions/download-artifact@v4
+      with:
+        name: eve-analysis-results
+        path: ./results/eve/
+      continue-on-error: true
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Generate Email Report
+      run: node generate-email-report.js
+      
+    - name: Send Email Report
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.EMAIL_USERNAME }}
+        password: ${{ secrets.EMAIL_PASSWORD }}
+        subject: "Daily Market Analysis Report - ${{ github.run_number }}"
+        to: laserwolve@gmail.com
+        from: PayForMyMembership Analysis <${{ secrets.EMAIL_USERNAME }}>
+        html_body: file://email-report.html
+        attachments: |
+          ./results/osrs/osrs-results.json
+          ./results/eve/eve-results.json
+        priority: normal

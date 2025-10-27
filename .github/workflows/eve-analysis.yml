@@ -1,0 +1,68 @@
+name: EVE Online Market Analysis
+
+on:
+  schedule:
+    # Run daily at 12:00 UTC
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: 'ISK budget (e.g., 10b, 500m)'
+        required: false
+        default: '1b'
+      max_items:
+        description: 'Maximum items to analyze'
+        required: false
+        default: '2000'
+
+jobs:
+  eve-analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300  # 5 hours max
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Run EVE Analysis
+      env:
+        BUDGET: ${{ github.event.inputs.budget || '1b' }}
+        MAX_ITEMS: ${{ github.event.inputs.max_items || '2000' }}
+        GITHUB_ACTIONS: 'true'
+      run: node eve-github-runner.js
+      
+    - name: Upload results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: eve-analysis-results
+        path: |
+          eve-results.json
+          eve-analysis.log
+        retention-days: 30
+        
+    - name: Create Summary
+      if: always()
+      run: |
+        if [ -f eve-results.json ]; then
+          echo "## EVE Online Investment Analysis Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Budget:** ${{ env.BUDGET }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Items Analyzed:** $(jq '.metadata.itemsAnalyzed // 0' eve-results.json)" >> $GITHUB_STEP_SUMMARY
+          echo "**Analysis Time:** $(jq -r '.metadata.analysisTime // "N/A"' eve-results.json)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Top 3 Recommendations:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          jq -r '.recommendations[]? | "**\(.name)** - Score: \(.investmentScore)/100, Price: \(.currentPrice | tonumber | . / 1000000 | floor)M ISK"' eve-results.json | head -3 >> $GITHUB_STEP_SUMMARY
+        else
+          echo "## Analysis Failed" >> $GITHUB_STEP_SUMMARY
+          echo "No results file generated. Check logs for errors." >> $GITHUB_STEP_SUMMARY
+        fi

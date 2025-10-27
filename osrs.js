@@ -4,6 +4,7 @@
  */
 
 import * as readline from 'readline';
+import fs from 'fs';
 
 // OSRS constants
 const USER_AGENT = 'PayForMyMembership/1.0.0 (laserwolve@gmail.com; +https://github.com/Laserwolve/PayForMyMembership)';
@@ -304,7 +305,7 @@ export async function runOSRS() {
   const allItems = Object.entries(itemsData)
     .filter(([id, item]) => {
       // Skip items without required data
-      if (!item.name || item.price === undefined || item.volume === undefined || item.limit === undefined) {
+      if (!item.name || item.price === undefined || item.volume === undefined) {
         return false;
       }
       
@@ -315,8 +316,8 @@ export async function runOSRS() {
       
       const unitsCanBuy = Math.floor(INVESTMENT_BUDGET / item.price);
       
-      // Filter out items where we'd hit the buy limit
-      if (unitsCanBuy > item.limit) {
+      // Filter out items where we'd hit the buy limit (only if limit exists)
+      if (item.limit !== undefined && unitsCanBuy > item.limit) {
         return false;
       }
       
@@ -396,4 +397,129 @@ export async function runOSRS() {
   });
   
   console.log('\n');
+}
+
+/**
+ * Automated OSRS analysis for GitHub Actions
+ * @param {string} budgetInput - Budget string (e.g., "50m")
+ * @param {number} maxItems - Maximum items to analyze
+ * @param {Object} options - Configuration options
+ * @returns {Promise<Object>} Analysis results
+ */
+export async function runOSRSAutomated(budgetInput, maxItems = 500, options = {}) {
+  const { isGitHubActions = false, logFile = null } = options;
+  
+  const logMessage = (message) => {
+    console.log(message);
+    if (logFile) {
+      const timestamp = new Date().toISOString();
+      fs.appendFileSync(logFile, `${timestamp}: ${message}\n`);
+    }
+  };
+
+  logMessage('🚀 OSRS Investment Analyzer (Automated)');
+  logMessage('======================================');
+  
+  const budget = parseGPAmount(budgetInput);
+  
+  if (isNaN(budget) || budget <= 0) {
+    throw new Error('Invalid budget amount');
+  }
+
+  logMessage(`Budget: ${budget.toLocaleString()} GP`);
+  logMessage(`Max Items: ${maxItems}`);
+  logMessage(`Mode: ${isGitHubActions ? 'GitHub Actions' : 'Local'}`);
+  logMessage('');
+
+  // Fetch item data
+  logMessage('Fetching OSRS item database...');
+  const itemsData = await fetchItemsData();
+  
+  if (!itemsData) {
+    throw new Error('Failed to fetch OSRS item data');
+  }
+
+  // Default to including member items for automated analysis
+  const includeMembers = true;
+  
+  // Filter items
+  const allItems = Object.entries(itemsData)
+    .filter(([id, item]) => {
+      if (!item.name || item.price === undefined || item.volume === undefined) {
+        return false;
+      }
+      
+      if (!includeMembers && item.members !== false) {
+        return false;
+      }
+      
+      const unitsCanBuy = Math.floor(budget / item.price);
+      
+      if (item.limit !== undefined && unitsCanBuy > item.limit) {
+        return false;
+      }
+      
+      const volumeThreshold = item.volume * 0.1;
+      if (unitsCanBuy > volumeThreshold) {
+        return false;
+      }
+      
+      return true;
+    })
+    .map(([id, item]) => ({
+      id: parseInt(id),
+      name: item.name
+    }));
+
+  logMessage(`Found ${allItems.length} suitable items`);
+  
+  // Limit items to analyze
+  const shuffledItems = [...allItems].sort(() => Math.random() - 0.5);
+  const itemsToAnalyze = shuffledItems.slice(0, Math.min(maxItems, allItems.length));
+  
+  logMessage(`Analyzing ${itemsToAnalyze.length} items...`);
+  logMessage('');
+
+  const results = [];
+  let itemsChecked = 0;
+  let successfulAnalyses = 0;
+
+  for (let i = 0; i < itemsToAnalyze.length; i++) {
+    const item = itemsToAnalyze[i];
+    itemsChecked++;
+    
+    // Progress update every 50 items
+    if (itemsChecked % 50 === 0 || itemsChecked === itemsToAnalyze.length) {
+      logMessage(`Progress: ${itemsChecked}/${itemsToAnalyze.length} (${successfulAnalyses} analyzed)`);
+    }
+    
+    const priceData = await fetchItemPriceData(item.id);
+    
+    if (priceData && priceData.daily) {
+      const analysis = analyzeItem(priceData.daily, item, budget);
+      
+      if (analysis) {
+        results.push(analysis);
+        successfulAnalyses++;
+      }
+    }
+    
+    // Rate limiting
+    await delay(1000);
+  }
+
+  logMessage('');
+  logMessage(`✅ OSRS Analysis Complete! Analyzed ${successfulAnalyses} items`);
+
+  // Sort by investment score
+  results.sort((a, b) => parseFloat(b.investmentScore) - parseFloat(a.investmentScore));
+
+  return {
+    recommendations: results.slice(0, 10),
+    totalAnalyzed: successfulAnalyses,
+    totalChecked: itemsChecked,
+    budget: budget,
+    budgetString: budgetInput,
+    includeMembers: includeMembers
+  };
 }
