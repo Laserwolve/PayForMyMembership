@@ -1,0 +1,13 @@
+{
+  "name": "payformymembership",
+  "version": "1.0.0",
+  "description": "Multi-game investment analyzer for premium currency trading (OSRS, EVE Online)",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": ["osrs", "eve-online", "investment", "price-analysis", "trading"],
+  "author": "",
+  "license": "ISC"
+}
