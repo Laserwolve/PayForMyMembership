@@ -10,23 +10,21 @@ on:
         description: 'OSRS budget (e.g., 10m, 500k, 2b)'
         required: false
         default: '50m'
-      osrs_items:
-        description: 'OSRS items to analyze'
+      osrs_include_members:
+        description: 'Include member items in OSRS analysis'
         required: false
-        default: '500'
+        default: true
+        type: boolean
       eve_budget:
         description: 'EVE ISK budget (e.g., 1b, 500m)'
         required: false
         default: '1b'
-      eve_items:
-        description: 'EVE items to analyze'
-        required: false
-        default: '1000'
 
 jobs:
   osrs-analysis:
     runs-on: ubuntu-latest
     timeout-minutes: 180  # 3 hours max for OSRS
+    if: vars.ENABLE_NIGHTLY_ANALYSIS != 'false'
     
     steps:
     - name: Checkout repository
@@ -40,7 +38,7 @@ jobs:
     - name: Run OSRS Analysis
       env:
         BUDGET: ${{ github.event.inputs.osrs_budget || '50m' }}
-        MAX_ITEMS: ${{ github.event.inputs.osrs_items || '500' }}
+        INCLUDE_MEMBERS: ${{ github.event.inputs.osrs_include_members || 'true' }}
         GITHUB_ACTIONS: 'true'
       run: node osrs-github-runner.js
       
@@ -57,6 +55,7 @@ jobs:
   eve-analysis:
     runs-on: ubuntu-latest
     timeout-minutes: 300  # 5 hours max for EVE
+    if: vars.ENABLE_NIGHTLY_ANALYSIS != 'false'
     
     steps:
     - name: Checkout repository
@@ -70,7 +69,6 @@ jobs:
     - name: Run EVE Analysis
       env:
         BUDGET: ${{ github.event.inputs.eve_budget || '1b' }}
-        MAX_ITEMS: ${{ github.event.inputs.eve_items || '1000' }}
         GITHUB_ACTIONS: 'true'
       run: node eve-github-runner.js
       

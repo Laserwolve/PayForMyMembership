@@ -7,21 +7,20 @@ import { runEVEAutomated } from './eve.js';
 import fs from 'fs';
 
 const BUDGET = process.env.BUDGET || '1b';
-const MAX_ITEMS = parseInt(process.env.MAX_ITEMS) || 2000;
 const IS_GITHUB_ACTIONS = process.env.GITHUB_ACTIONS === 'true';
 
 async function main() {
   console.log('🚀 EVE Online GitHub Actions Analysis');
   console.log('====================================');
   console.log(`Budget: ${BUDGET}`);
-  console.log(`Max Items: ${MAX_ITEMS}`);
+  console.log(`Analyzing ALL available items`);
   console.log(`Environment: ${IS_GITHUB_ACTIONS ? 'GitHub Actions' : 'Local'}`);
   console.log('');
 
   const startTime = Date.now();
   
   try {
-    const results = await runEVEAutomated(BUDGET, MAX_ITEMS, {
+    const results = await runEVEAutomated(BUDGET, null, {
       isGitHubActions: IS_GITHUB_ACTIONS,
       logFile: 'eve-analysis.log'
     });
@@ -32,7 +31,6 @@ async function main() {
     // Add metadata
     results.metadata = {
       budget: BUDGET,
-      maxItems: MAX_ITEMS,
       itemsAnalyzed: results.totalAnalyzed || 0,
       analysisTime: `${Math.floor(analysisTime / 60)}m ${analysisTime % 60}s`,
       timestamp: new Date().toISOString(),
@@ -63,7 +61,6 @@ async function main() {
       error: error.message,
       metadata: {
         budget: BUDGET,
-        maxItems: MAX_ITEMS,
         timestamp: new Date().toISOString(),
         environment: 'GitHub Actions',
         failed: true

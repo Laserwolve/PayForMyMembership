@@ -12,20 +12,20 @@ const USER_AGENT = 'PayForMyMembership/1.0.0 (laserwolve@gmail.com; EVE: Foggle 
 // ===== API FUNCTIONS =====
 
 /**
- * Fetches all type IDs that are traded in a specific region
+ * Fetches all type IDs from active market orders in a specific region
  * @param {number} regionId - EVE region ID
- * @returns {Promise<Array>} Array of type IDs
+ * @returns {Promise<Array>} Array of unique type IDs with active orders
  */
-async function fetchRegionTypes(regionId) {
-  const allTypes = [];
+async function fetchRegionOrderTypes(regionId) {
+  const typeIdSet = new Set();
   let page = 1;
   let hasMorePages = true;
   
   while (hasMorePages) {
-    const url = `https://esi.evetech.net/latest/markets/${regionId}/types/?datasource=tranquility&page=${page}`;
+    const url = `https://esi.evetech.net/latest/markets/${regionId}/orders/?datasource=tranquility&order_type=all&page=${page}`;
     
     try {
-      process.stdout.write(`Fetching page ${page}...\r`);
+      process.stdout.write(`Fetching orders page ${page}...\r`);
       
       const response = await fetch(url, {
         headers: {
@@ -35,11 +35,17 @@ async function fetchRegionTypes(regionId) {
       });
       
       if (!response.ok) {
-        throw new Error(`Failed to fetch region types: ${response.status}`);
+        throw new Error(`Failed to fetch market orders: ${response.status}`);
       }
       
-      const types = await response.json();
-      allTypes.push(...types);
+      const orders = await response.json();
+      
+      // Extract unique type IDs from orders
+      orders.forEach(order => {
+        if (order.type_id) {
+          typeIdSet.add(order.type_id);
+        }
+      });
       
       // Check if there are more pages
       const xPages = response.headers.get('X-Pages');
@@ -50,12 +56,12 @@ async function fetchRegionTypes(regionId) {
         hasMorePages = false;
       }
     } catch (error) {
-      console.error('Error fetching region types:', error.message);
+      console.error('Error fetching market orders:', error.message);
       hasMorePages = false;
     }
   }
   
-  return allTypes;
+  return Array.from(typeIdSet);
 }
 
 /**
@@ -90,21 +96,21 @@ async function fetchNames(typeIds) {
 }
 
 /**
- * Fetches all tradeable items in Jita with names
+ * Fetches all items with active orders in Jita with names
  * @returns {Promise<Array>} Array of {id, name} objects
  */
 async function fetchJitaItems() {
-  console.log('Fetching items traded in Jita...');
+  console.log('Fetching items with active orders in Jita...');
   
-  // Get all type IDs traded in Jita
-  const typeIds = await fetchRegionTypes(JITA_REGION_ID);
+  // Get all type IDs with active orders in Jita
+  const typeIds = await fetchRegionOrderTypes(JITA_REGION_ID);
   
   if (typeIds.length === 0) {
-    console.error('Failed to fetch Jita market items');
+    console.error('Failed to fetch Jita market items with active orders');
     return [];
   }
   
-  console.log(`Found ${typeIds.length} items traded in Jita`);
+  console.log(`Found ${typeIds.length} items with active orders in Jita`);
   console.log('Resolving item names (this may take a moment)...');
   
   // Fetch names in batches of 1000 (ESI limit)
@@ -134,7 +140,7 @@ async function fetchJitaItems() {
     name: nameData.name
   }));
   
-  console.log(`✅ Loaded ${items.length} tradeable items\n`);
+  console.log(`✅ Loaded ${items.length} items with active orders\n`);
   
   return items;
 }
@@ -502,7 +508,7 @@ export async function runEVE(budgetInput = null, maxItems = null, options = {}) 
  * @param {Object} options - Configuration options
  * @returns {Promise<Object>} Analysis results
  */
-export async function runEVEAutomated(budgetInput, maxItems = 1000, options = {}) {
+export async function runEVEAutomated(budgetInput, maxItems = null, options = {}) {
   const { isGitHubActions = false, logFile = null } = options;
   
   const logMessage = (message) => {
@@ -523,25 +529,25 @@ export async function runEVEAutomated(budgetInput, maxItems = 1000, options = {}
   }
 
   logMessage(`Budget: ${budget.toLocaleString()} ISK`);
-  logMessage(`Max Items: ${maxItems}`);
+  logMessage(`Analyzing ALL available items`);
   logMessage(`Mode: ${isGitHubActions ? 'GitHub Actions' : 'Local'}`);
   logMessage('');
 
-  // Fetch all tradeable items in Jita
-  logMessage('Fetching items traded in Jita...');
+  // Fetch all items with active orders in Jita
+  logMessage('Fetching items with active orders in Jita...');
   const TRADEABLE_ITEMS = await fetchJitaItems();
   
   if (TRADEABLE_ITEMS.length === 0) {
-    throw new Error('Failed to load tradeable items');
+    throw new Error('Failed to load items with active orders');
   }
 
-  logMessage(`✅ Loaded ${TRADEABLE_ITEMS.length} tradeable items`);
+  logMessage(`✅ Loaded ${TRADEABLE_ITEMS.length} items with active orders`);
 
-  // Randomly select items to analyze
+  // Analyze ALL items (no limit when maxItems is null)
   const shuffledItems = [...TRADEABLE_ITEMS].sort(() => Math.random() - 0.5);
-  const itemsToAnalyze = shuffledItems.slice(0, Math.min(maxItems, TRADEABLE_ITEMS.length));
+  const itemsToAnalyze = maxItems ? shuffledItems.slice(0, maxItems) : shuffledItems;
 
-  logMessage(`Analyzing ${itemsToAnalyze.length} items...`);
+  logMessage(`Analyzing ALL ${itemsToAnalyze.length} items...`);
   logMessage('');
 
   const results = [];

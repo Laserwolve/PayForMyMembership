@@ -406,7 +406,7 @@ export async function runOSRS() {
  * @param {Object} options - Configuration options
  * @returns {Promise<Object>} Analysis results
  */
-export async function runOSRSAutomated(budgetInput, maxItems = 500, options = {}) {
+export async function runOSRSAutomated(budgetInput, includeMembers = true, options = {}) {
   const { isGitHubActions = false, logFile = null } = options;
   
   const logMessage = (message) => {
@@ -427,7 +427,8 @@ export async function runOSRSAutomated(budgetInput, maxItems = 500, options = {}
   }
 
   logMessage(`Budget: ${budget.toLocaleString()} GP`);
-  logMessage(`Max Items: ${maxItems}`);
+  logMessage(`Include Members: ${includeMembers}`);
+  logMessage(`Analyzing ALL suitable items`);
   logMessage(`Mode: ${isGitHubActions ? 'GitHub Actions' : 'Local'}`);
   logMessage('');
 
@@ -439,8 +440,7 @@ export async function runOSRSAutomated(budgetInput, maxItems = 500, options = {}
     throw new Error('Failed to fetch OSRS item data');
   }
 
-  // Default to including member items for automated analysis
-  const includeMembers = true;
+  // Use the includeMembers parameter
   
   // Filter items
   const allItems = Object.entries(itemsData)
@@ -473,11 +473,11 @@ export async function runOSRSAutomated(budgetInput, maxItems = 500, options = {}
 
   logMessage(`Found ${allItems.length} suitable items`);
   
-  // Limit items to analyze
+  // Analyze ALL suitable items (no limit)
   const shuffledItems = [...allItems].sort(() => Math.random() - 0.5);
-  const itemsToAnalyze = shuffledItems.slice(0, Math.min(maxItems, allItems.length));
+  const itemsToAnalyze = shuffledItems;
   
-  logMessage(`Analyzing ${itemsToAnalyze.length} items...`);
+  logMessage(`Analyzing ALL ${itemsToAnalyze.length} items...`);
   logMessage('');
 
   const results = [];
