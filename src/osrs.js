@@ -4,7 +4,7 @@ import { createRequire } from 'module';
 
 // Load package.json for app name and version
 const require = createRequire(import.meta.url);
-const pkg = require('./package.json');
+const pkg = require('../package.json');
 
 // OSRS constants
 // Dynamically construct USER_AGENT from GitHub Actions environment

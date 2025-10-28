@@ -9,7 +9,7 @@ import { createRequire } from 'module';
 
 // Load package.json for app name and version
 const require = createRequire(import.meta.url);
-const pkg = require('./package.json');
+const pkg = require('../package.json');
 
 // EVE Online constants
 const JITA_REGION_ID = 10000002; // The Forge (Jita)
