@@ -7,6 +7,12 @@ import * as readline from 'readline';
 import fs from 'fs';
 import { createRequire } from 'module';
 import yaml from 'js-yaml';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get directory name for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load package.json for app name and version
 const require = createRequire(import.meta.url);
@@ -30,69 +36,31 @@ const JITA_REGION_ID = 10000002; // The Forge (Jita)
  * @returns {Array} Array of tradeable items with id and name
  */
 function loadTradeableItemsFromSDE() {
-  try {
-    const typesFilePath = './data/types.yaml';
-    
-    if (!fs.existsSync(typesFilePath)) {
-      console.warn('⚠️ types.yaml not found, falling back to hardcoded items');
-      return FALLBACK_ITEMS;
-    }
-    
-    console.log('📊 Loading tradeable items from EVE SDE...');
-    const typesData = yaml.load(fs.readFileSync(typesFilePath, 'utf8'));
-    
-    const tradeableItems = [];
-    
-    for (const [typeId, typeData] of Object.entries(typesData)) {
-      // Check if item is tradeable (has market group and is published)
-      if (typeData.marketGroupID && typeData.published) {
-        // Get English name from the name object
-        const itemName = typeData.name?.en || typeData.name || `Item ${typeId}`;
-        
-        tradeableItems.push({
-          id: parseInt(typeId),
-          name: itemName
-        });
-      }
-    }
-    
-    console.log(`✅ Loaded ${tradeableItems.length} tradeable items from SDE`);
-    return tradeableItems;
-    
-  } catch (error) {
-    console.error('❌ Error loading SDE data:', error.message);
-    console.log('🔄 Falling back to hardcoded items');
-    return FALLBACK_ITEMS;
+  const typesFilePath = path.join(__dirname, '..', 'data', 'types.yaml');
+  
+  if (!fs.existsSync(typesFilePath)) {
+    throw new Error(`types.yaml not found at ${typesFilePath}. Please run eveDataCleaner.js first.`);
   }
+  
+  console.log('📊 Loading tradeable items from EVE SDE...');
+  const typesData = yaml.load(fs.readFileSync(typesFilePath, 'utf8'));
+  
+  const tradeableItems = [];
+  
+  for (const [typeId, typeData] of Object.entries(typesData)) {
+    // The cleaned data already has only tradeable items
+    // Just extract the name (which is already in English)
+    const itemName = typeData.name || `Item ${typeId}`;
+    
+    tradeableItems.push({
+      id: parseInt(typeId),
+      name: itemName
+    });
+  }
+  
+  console.log(`✅ Loaded ${tradeableItems.length} tradeable items from SDE`);
+  return tradeableItems;
 }
-
-// Fallback items in case SDE loading fails
-const FALLBACK_ITEMS = [
-  { id: 34, name: 'Tritanium' },
-  { id: 35, name: 'Pyerite' },
-  { id: 36, name: 'Mexallon' },
-  { id: 37, name: 'Isogen' },
-  { id: 38, name: 'Nocxium' },
-  { id: 39, name: 'Zydrine' },
-  { id: 40, name: 'Megacyte' },
-  { id: 44, name: 'Enriched Uranium' },
-  { id: 11399, name: 'Morphite' },
-  { id: 16275, name: 'Oxygen Isotopes' },
-  { id: 16274, name: 'Nitrogen Isotopes' },
-  { id: 16273, name: 'Hydrogen Isotopes' },
-  { id: 16272, name: 'Helium Isotopes' },
-  { id: 213, name: 'Shuttle' },
-  { id: 588, name: 'Destroyer' },
-  { id: 29668, name: 'PLEX' },
-  { id: 44992, name: 'Skill Injector' },
-  { id: 40520, name: 'Daily Alpha Injector' },
-  { id: 3645, name: 'Magnetic Field Stabilizer II' },
-  { id: 1952, name: 'Damage Control II' },
-  { id: 5973, name: 'Heat Sink II' },
-  { id: 2048, name: 'Ballistic Control System II' },
-  { id: 11370, name: 'Twinkey' },
-  { id: 34133, name: 'Quafe Zero' }
-];
 
 // Load all tradeable items from SDE
 const TRADEABLE_ITEMS = loadTradeableItemsFromSDE();
