@@ -2,7 +2,7 @@
 
 ## Getting Help
 
-If you need help with PayForMyMembership, here are your options:
+If you need help with Mythic Market Mogul, here are your options:
 
 ### Documentation
 
@@ -13,8 +13,8 @@ If you need help with PayForMyMembership, here are your options:
 
 For bug reports, feature requests, or general questions:
 
-1. Check existing [GitHub Issues](https://github.com/Laserwolve/PayForMyMembership/issues) first
-2. If your issue isn't already reported, [create a new issue](https://github.com/Laserwolve/PayForMyMembership/issues/new)
+1. Check existing [GitHub Issues](https://github.com/Laserwolve/mythic-market-mogul/issues) first
+2. If your issue isn't already reported, [create a new issue](https://github.com/Laserwolve/mythic-market-mogul/issues/new)
 
 When reporting issues, please include:
 

@@ -1,15 +1,15 @@
 # Citation
 
-If you use PayForMyMembership in your research or project, please cite it as follows:
+If you use Mythic Market Mogul in your research or project, please cite it as follows:
 
 ## BibTeX
 
 ```bibtex
-@software{payformymembership2025,
-  title = {PayForMyMembership: Multi-Game Investment Analyzer},
+@software{mythicmarketmogul2025,
+  title = {Mythic Market Mogul: Multi-Game Investment Analyzer},
   author = {Laserwolve},
   year = {2025},
-  url = {https://github.com/Laserwolve/PayForMyMembership},
+  url = {https://github.com/Laserwolve/mythic-market-mogul},
   version = {1.0.0},
   note = {Multi-game market analysis tool for OSRS and EVE Online}
 }
@@ -17,19 +17,19 @@ If you use PayForMyMembership in your research or project, please cite it as fol
 
 ## APA Style
 
-Laserwolve. (2025). *PayForMyMembership: Multi-Game Investment Analyzer* (Version 1.0.0) [Computer software]. https://github.com/Laserwolve/PayForMyMembership
+Laserwolve. (2025). *Mythic Market Mogul: Multi-Game Investment Analyzer* (Version 1.0.0) [Computer software]. https://github.com/Laserwolve/mythic-market-mogul
 
 ## MLA Style
 
-Laserwolve. "PayForMyMembership: Multi-Game Investment Analyzer." *GitHub*, 2025, https://github.com/Laserwolve/PayForMyMembership.
+Laserwolve. "Mythic Market Mogul: Multi-Game Investment Analyzer." *GitHub*, 2025, https://github.com/Laserwolve/mythic-market-mogul.
 
 ## Chicago Style
 
-Laserwolve. "PayForMyMembership: Multi-Game Investment Analyzer." GitHub, 2025. https://github.com/Laserwolve/PayForMyMembership.
+Laserwolve. "Mythic Market Mogul: Multi-Game Investment Analyzer." GitHub, 2025. https://github.com/Laserwolve/mythic-market-mogul.
 
 ## Description
 
-PayForMyMembership is an open-source Node.js application that analyzes in-game market data to identify profitable premium currency trading opportunities across multiple MMO games, including Old School RuneScape (OSRS) and EVE Online.
+Mythic Market Mogul is an open-source Node.js application that analyzes in-game market data to identify profitable premium currency trading opportunities across multiple MMO games, including Old School RuneScape (OSRS) and EVE Online.
 
 ## Key Features
 

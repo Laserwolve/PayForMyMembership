@@ -1,4 +1,4 @@
-# PayForMyMembership - Multi-Game Investment Analyzer
+# Mythic Market Mogul - Multi-Game Investment Analyzer
 
 A Node.js application that analyzes in-game market data to find profitable premium currency trading opportunities across multiple MMO games.
 

@@ -1,6 +1,6 @@
-# Contributing to PayForMyMembership
+# Contributing to Mythic Market Mogul
 
-Thank you for considering contributing to PayForMyMembership! This document provides guidelines for contributing to the project.
+Thank you for considering contributing to Mythic Market Mogul! This document provides guidelines for contributing to the project.
 
 ## Getting Started
 

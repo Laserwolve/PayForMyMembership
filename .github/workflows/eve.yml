@@ -61,7 +61,6 @@ jobs:
         password: ${{ secrets.EMAIL_PASSWORD }}
         subject: "EVE Market Analysis Report - ${{ github.run_number }}"
         to: laserwolve@gmail.com
-        from: PayForMyMembership Analysis <${{ secrets.EMAIL_USERNAME }}>
+        from: Mythic Market Mogul <${{ secrets.EMAIL_USERNAME }}>
         html_body: file://email-report.html
-        attachments: eve-results.json
         priority: normal

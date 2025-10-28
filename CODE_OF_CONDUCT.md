@@ -2,7 +2,7 @@
 
 ## Our Commitment
 
-We are committed to providing a welcoming and respectful environment for all contributors and users of PayForMyMembership, regardless of background or experience level.
+We are committed to providing a welcoming and respectful environment for all contributors and users of Mythic Market Mogul, regardless of background or experience level.
 
 ## Expected Behavior
 

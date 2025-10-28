@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Only the latest version of PayForMyMembership is currently supported with security updates.
+Only the latest version of Mythic Market Mogul is currently supported with security updates.
 
 | Version | Supported          |
 | ------- | ------------------ |
