@@ -6,6 +6,7 @@
 import * as readline from 'readline';
 import fs from 'fs';
 import { createRequire } from 'module';
+import yaml from 'js-yaml';
 
 // Load package.json for app name and version
 const require = createRequire(import.meta.url);
@@ -13,6 +14,88 @@ const pkg = require('../package.json');
 
 // EVE Online constants
 const JITA_REGION_ID = 10000002; // The Forge (Jita)
+
+// Currently 50,535 items in EVE. ~18,838 are tradeable.
+// We can get a full list of all items from https://esi.evetech.net/universe/types,
+// but it doesn't include info like their name and if they're marketable or not.
+// We'd have to call https://esi.evetech.net/universe/types/{type_id} on all 50,000+
+// items. It's better to use the static download.
+
+// sde:
+//   buildNumber: 3077380
+//   releaseDate: '2025-10-28T11:14:15Z'
+
+/**
+ * Loads tradeable items from EVE Online Static Data Export (SDE)
+ * @returns {Array} Array of tradeable items with id and name
+ */
+function loadTradeableItemsFromSDE() {
+  try {
+    const typesFilePath = './data/types.yaml';
+    
+    if (!fs.existsSync(typesFilePath)) {
+      console.warn('⚠️ types.yaml not found, falling back to hardcoded items');
+      return FALLBACK_ITEMS;
+    }
+    
+    console.log('📊 Loading tradeable items from EVE SDE...');
+    const typesData = yaml.load(fs.readFileSync(typesFilePath, 'utf8'));
+    
+    const tradeableItems = [];
+    
+    for (const [typeId, typeData] of Object.entries(typesData)) {
+      // Check if item is tradeable (has market group and is published)
+      if (typeData.marketGroupID && typeData.published) {
+        // Get English name from the name object
+        const itemName = typeData.name?.en || typeData.name || `Item ${typeId}`;
+        
+        tradeableItems.push({
+          id: parseInt(typeId),
+          name: itemName
+        });
+      }
+    }
+    
+    console.log(`✅ Loaded ${tradeableItems.length} tradeable items from SDE`);
+    return tradeableItems;
+    
+  } catch (error) {
+    console.error('❌ Error loading SDE data:', error.message);
+    console.log('🔄 Falling back to hardcoded items');
+    return FALLBACK_ITEMS;
+  }
+}
+
+// Fallback items in case SDE loading fails
+const FALLBACK_ITEMS = [
+  { id: 34, name: 'Tritanium' },
+  { id: 35, name: 'Pyerite' },
+  { id: 36, name: 'Mexallon' },
+  { id: 37, name: 'Isogen' },
+  { id: 38, name: 'Nocxium' },
+  { id: 39, name: 'Zydrine' },
+  { id: 40, name: 'Megacyte' },
+  { id: 44, name: 'Enriched Uranium' },
+  { id: 11399, name: 'Morphite' },
+  { id: 16275, name: 'Oxygen Isotopes' },
+  { id: 16274, name: 'Nitrogen Isotopes' },
+  { id: 16273, name: 'Hydrogen Isotopes' },
+  { id: 16272, name: 'Helium Isotopes' },
+  { id: 213, name: 'Shuttle' },
+  { id: 588, name: 'Destroyer' },
+  { id: 29668, name: 'PLEX' },
+  { id: 44992, name: 'Skill Injector' },
+  { id: 40520, name: 'Daily Alpha Injector' },
+  { id: 3645, name: 'Magnetic Field Stabilizer II' },
+  { id: 1952, name: 'Damage Control II' },
+  { id: 5973, name: 'Heat Sink II' },
+  { id: 2048, name: 'Ballistic Control System II' },
+  { id: 11370, name: 'Twinkey' },
+  { id: 34133, name: 'Quafe Zero' }
+];
+
+// Load all tradeable items from SDE
+const TRADEABLE_ITEMS = loadTradeableItemsFromSDE();
 
 // Dynamically construct USER_AGENT from GitHub Actions environment
 const getGitHubEmail = () => {
@@ -32,143 +115,22 @@ const getRepoUrl = () => {
   return `${serverUrl}/${repository}`;
 };
 
-const USER_AGENT = `${pkg.name}/${pkg.version} (${getGitHubEmail()}; +${getRepoUrl()})`;
+// USER_AGENT will be constructed when needed
+let USER_AGENT = null;
+
+const getUserAgent = () => {
+  if (!USER_AGENT) {
+    try {
+      USER_AGENT = `${pkg.name}/${pkg.version} (${getGitHubEmail()}; +${getRepoUrl()})`;
+    } catch (error) {
+      // Fallback for local development
+      USER_AGENT = `${pkg.name}/${pkg.version} (local-development)`;
+    }
+  }
+  return USER_AGENT;
+};
 
 // ===== API FUNCTIONS =====
-
-/**
- * Fetches all type IDs from active market orders in a specific region
- * @param {number} regionId - EVE region ID
- * @returns {Promise<Array>} Array of unique type IDs with active orders
- */
-async function fetchRegionOrderTypes(regionId) {
-  const typeIdSet = new Set();
-  let page = 1;
-  let hasMorePages = true;
-  
-  while (hasMorePages) {
-    const url = `https://esi.evetech.net/latest/markets/${regionId}/orders/?datasource=tranquility&order_type=all&page=${page}`;
-    
-    try {
-      process.stdout.write(`Fetching orders page ${page}...\r`);
-      
-      const response = await fetch(url, {
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': USER_AGENT
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch market orders: ${response.status}`);
-      }
-      
-      const orders = await response.json();
-      
-      // Extract unique type IDs from orders
-      orders.forEach(order => {
-        if (order.type_id) {
-          typeIdSet.add(order.type_id);
-        }
-      });
-      
-      // Check if there are more pages
-      const xPages = response.headers.get('X-Pages');
-      if (xPages && page < parseInt(xPages)) {
-        page++;
-        await delay(1000); // 1 second delay between page requests
-      } else {
-        hasMorePages = false;
-      }
-    } catch (error) {
-      console.error('Error fetching market orders:', error.message);
-      hasMorePages = false;
-    }
-  }
-  
-  return Array.from(typeIdSet);
-}
-
-/**
- * Fetches names for a batch of type IDs
- * @param {Array<number>} typeIds - Array of type IDs to resolve
- * @returns {Promise<Array>} Array of {id, name, category} objects
- */
-async function fetchNames(typeIds) {
-  const url = 'https://esi.evetech.net/latest/universe/names/?datasource=tranquility';
-  
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'User-Agent': USER_AGENT,
-        'X-Compatibility-Date': '2025-09-30'
-      },
-      body: JSON.stringify(typeIds)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch names: ${response.status}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching names:', error.message);
-    return [];
-  }
-}
-
-/**
- * Fetches all items with active orders in Jita with names
- * @returns {Promise<Array>} Array of {id, name} objects
- */
-async function fetchJitaItems() {
-  console.log('Fetching items with active orders in Jita...');
-  
-  // Get all type IDs with active orders in Jita
-  const typeIds = await fetchRegionOrderTypes(JITA_REGION_ID);
-  
-  if (typeIds.length === 0) {
-    console.error('Failed to fetch Jita market items with active orders');
-    return [];
-  }
-  
-  console.log(`Found ${typeIds.length} items with active orders in Jita`);
-  console.log('Resolving item names (this may take a moment)...');
-  
-  // Fetch names in batches of 1000 (ESI limit)
-  const allNames = [];
-  const batchSize = 1000;
-  
-  for (let i = 0; i < typeIds.length; i += batchSize) {
-    const batch = typeIds.slice(i, i + batchSize);
-    const batchNum = Math.floor(i / batchSize) + 1;
-    const totalBatches = Math.ceil(typeIds.length / batchSize);
-    
-    process.stdout.write(`Resolving names batch ${batchNum}/${totalBatches}...\r`);
-    const names = await fetchNames(batch);
-    allNames.push(...names);
-    
-    // 1 second delay between batches
-    if (i + batchSize < typeIds.length) {
-      await delay(1000);
-    }
-  }
-  
-  console.log(''); // Clear the progress line
-  
-  // Combine into tradeable items array
-  const items = allNames.map(nameData => ({
-    id: nameData.id,
-    name: nameData.name
-  }));
-  
-  console.log(`✅ Loaded ${items.length} items with active orders\n`);
-  
-  return items;
-}
 
 /**
  * Fetches market history for an item in a specific region
@@ -183,7 +145,7 @@ async function fetchMarketHistory(regionId, typeId) {
     const response = await fetch(url, {
       headers: {
         'Accept': 'application/json',
-        'User-Agent': USER_AGENT,
+        'User-Agent': getUserAgent(),
         'X-Compatibility-Date': '2025-09-30'
       }
     });
@@ -410,13 +372,8 @@ export async function runEVE(budgetInput = null, maxItems = null, options = {}) 
   console.log('=====================================');
   console.log('Strategy: High-volatility, high-ROI opportunities\n');
   
-  // Fetch all tradeable items in Jita dynamically
-  const TRADEABLE_ITEMS = await fetchJitaItems();
-  
-  if (TRADEABLE_ITEMS.length === 0) {
-    console.error('Failed to load tradeable items. Please try again.');
-    process.exit(1);
-  }
+  // Items are already loaded from SDE at module level
+  console.log(`✅ Using ${TRADEABLE_ITEMS.length} tradeable items for analysis\n`);
   
   // Get ISK budget (from parameter or prompt)
   let budget;
@@ -558,15 +515,8 @@ export async function runEVEAutomated(budgetInput, maxItems = null, options = {}
   logMessage(`Mode: ${isGitHubActions ? 'GitHub Actions' : 'Local'}`);
   logMessage('');
 
-  // Fetch all items with active orders in Jita
-  logMessage('Fetching items with active orders in Jita...');
-  const TRADEABLE_ITEMS = await fetchJitaItems();
-  
-  if (TRADEABLE_ITEMS.length === 0) {
-    throw new Error('Failed to load items with active orders');
-  }
-
-  logMessage(`✅ Loaded ${TRADEABLE_ITEMS.length} items with active orders`);
+  // Items are already loaded from SDE at module level
+  logMessage(`✅ Using ${TRADEABLE_ITEMS.length} tradeable items for analysis`);
 
   // Analyze ALL items (no limit when maxItems is null)
   const shuffledItems = [...TRADEABLE_ITEMS].sort(() => Math.random() - 0.5);

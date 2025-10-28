@@ -8,7 +8,16 @@
     "eve-github": "node eve-github-runner.js",
     "generate-report": "node generate-email-report.js"
   },
-  "keywords": ["osrs", "eve-online", "investment", "price-analysis", "trading"],
+  "keywords": [
+    "osrs",
+    "eve-online",
+    "investment",
+    "price-analysis",
+    "trading"
+  ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
 }
