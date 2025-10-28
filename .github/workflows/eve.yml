@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
     inputs:
       eve_budget:
-        description: 'EVE ISK budget (e.g., 1b, 500m)'
-        required: false
+        description: 'ISK budget (e.g., 1b, 500m)'
+        required: true
 
 jobs:
   eve-analysis:
