@@ -23,6 +23,9 @@ jobs:
       with:
         node-version: '18'
         
+    - name: Install dependencies
+      run: npm install
+        
     - name: Run EVE Analysis
       env:
         BUDGET: ${{ github.event.inputs.eve_budget || '1b' }}

@@ -28,6 +28,9 @@ jobs:
       with:
         node-version: '18'
         
+    - name: Install dependencies
+      run: npm install
+        
     - name: Run OSRS Analysis
       env:
         BUDGET: ${{ github.event.inputs.osrs_budget || '50m' }}

@@ -19,7 +19,7 @@ const JITA_REGION_ID = 10000002; // The Forge (Jita)
 // We can get a full list of all items from https://esi.evetech.net/universe/types,
 // but it doesn't include info like their name and if they're marketable or not.
 // We'd have to call https://esi.evetech.net/universe/types/{type_id} on all 50,000+
-// items. It's better to use the static download.
+// items. It's better to use the static download: https://developers.eveonline.com/static-data
 
 // sde:
 //   buildNumber: 3077380
