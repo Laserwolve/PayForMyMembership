@@ -2,10 +2,8 @@
   "name": "payformymembership",
   "version": "1.0.0",
   "description": "Multi-game investment analyzer for premium currency trading (OSRS, EVE Online)",
-  "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
     "osrs-github": "node osrs-github-runner.js",
     "eve-github": "node eve-github-runner.js",
     "generate-report": "node generate-email-report.js"

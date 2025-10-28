@@ -1,4 +1,4 @@
-name: EVE Nightly Analysis
+name: EVE Market Analysis
 
 on:
   schedule:
@@ -13,7 +13,6 @@ on:
 jobs:
   eve-analysis:
     runs-on: ubuntu-latest
-    timeout-minutes: 300  # 5 hours max for EVE
     
     steps:
     - name: Checkout repository
@@ -28,7 +27,7 @@ jobs:
       env:
         BUDGET: ${{ github.event.inputs.eve_budget || '1b' }}
         GITHUB_ACTIONS: 'true'
-      run: node eve.js
+      run: node src/eve.js
       
     - name: Upload EVE Results
       uses: actions/upload-artifact@v4
@@ -38,6 +37,7 @@ jobs:
         path: |
           eve-results.json
           eve-analysis.log
+          email-report.html
         retention-days: 30
 
   send-email-report:
@@ -46,24 +46,12 @@ jobs:
     if: always()
     
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      
     - name: Download EVE Results
       uses: actions/download-artifact@v4
       with:
         name: eve-analysis-results-${{ github.run_number }}
-        path: ./results/eve/
       continue-on-error: true
         
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        
-    - name: Generate Email Report
-      run: node generate-email-report.js eve
-      
     - name: Send Email Report
       uses: dawidd6/action-send-mail@v3
       with:
@@ -75,5 +63,5 @@ jobs:
         to: laserwolve@gmail.com
         from: PayForMyMembership Analysis <${{ secrets.EMAIL_USERNAME }}>
         html_body: file://email-report.html
-        attachments: ./results/eve/eve-results.json
+        attachments: eve-results.json
         priority: normal
