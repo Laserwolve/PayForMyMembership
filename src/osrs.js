@@ -56,23 +56,13 @@ async function fetchPriceHistory(itemId) {
       throw new Error(`Failed to fetch item ${itemId}: ${response.status}`);
     }
     
-    // Check if response is actually JSON
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      console.error(`  ⚠️ Rate limit detected for item ${itemId}: Received ${contentType} instead of JSON (likely soft ban)`);
-      console.error(`  Headers:`, Object.fromEntries(response.headers.entries()));
-      const htmlBody = await response.text();
-      console.error(`  Response body:\n${htmlBody}`);
-      throw new Error(`Rate limited by OSRS API - received HTML instead of JSON`);
-    }
-    
     const text = await response.text();
     
-    // Check if response body is empty
+    // Check if response body is empty (actual rate limit indicator)
     if (text.length === 0) {
-      console.error(`  ⚠️ Empty response for item ${itemId} (likely rate limited)`);
+      console.error(`  ⚠️ Rate limit detected for item ${itemId}: Empty response body`);
       console.error(`  Headers:`, Object.fromEntries(response.headers.entries()));
-      return null;
+      throw new Error(`Rate limited by OSRS API - received empty response`);
     }
     
     const data = JSON.parse(text);
