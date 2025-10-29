@@ -61,7 +61,9 @@ async function fetchPriceHistory(itemId) {
     if (!contentType || !contentType.includes('application/json')) {
       console.error(`  ⚠️ Rate limit detected for item ${itemId}: Received ${contentType} instead of JSON (likely soft ban)`);
       console.error(`  Headers:`, Object.fromEntries(response.headers.entries()));
-      return null;
+      const htmlBody = await response.text();
+      console.error(`  Response body:\n${htmlBody}`);
+      throw new Error(`Rate limited by OSRS API - received HTML instead of JSON`);
     }
     
     const text = await response.text();
@@ -361,8 +363,8 @@ export async function runOSRSAutomated(options = {}) {
       }
     }
     
-    // Rate limiting: 5000ms delay between requests
-    await delay(5000);
+    // Rate limiting: 10000ms delay between requests
+    await delay(10000);
   }
 
   logMessage('');
