@@ -307,9 +307,16 @@ export async function runOSRSAutomated(options = {}) {
   }
 
   // Filter items - include both members and F2P
+  // Only consider items with at least 10 million gold in trade volume
   const allItems = Object.entries(itemsData)
     .filter(([id, item]) => {
       if (!item.name || item.price === undefined || item.volume === undefined) {
+        return false;
+      }
+      // Calculate total trade value (price * volume)
+      const tradeValue = item.price * item.volume;
+      // Require at least 10 million gold in trade
+      if (tradeValue < 10000000) {
         return false;
       }
       return true;
