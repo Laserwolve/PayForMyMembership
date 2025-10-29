@@ -5,15 +5,6 @@ on:
     # Run daily at 2:00 AM UTC
     - cron: '0 2 * * *'
   workflow_dispatch:
-    inputs:
-      osrs_budget:
-        description: 'budget (e.g., 10m, 500k, 2b)'
-        required: false
-      osrs_include_members:
-        description: 'Include member items'
-        required: false
-        default: true
-        type: boolean
 
 jobs:
   osrs-analysis:
@@ -35,8 +26,6 @@ jobs:
         
     - name: Run OSRS Analysis
       env:
-        BUDGET: ${{ github.event.inputs.osrs_budget || '50m' }}
-        INCLUDE_MEMBERS: ${{ github.event.inputs.osrs_include_members || 'true' }}
         GITHUB_ACTIONS: 'true'
       run: node src/osrs.js
       
@@ -50,9 +39,6 @@ jobs:
         
         # Archive dated report
         cp email-report.html docs/osrs/archive/${REPORT_DATE}.html
-        
-        # Copy JSON data
-        cp osrs-results.json docs/osrs/data.json
         cp osrs-results.json docs/osrs/archive/${REPORT_DATE}.json
         
     - name: Commit and push reports

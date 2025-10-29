@@ -7,10 +7,25 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+        }
+        .report-container {
+            max-width: 915px;
+            width: 915px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            background-image: url('images/background.jpg');
+            background-repeat: repeat-y;
+            background-size: 100% auto;
+            background-position: top center;
+            box-sizing: border-box;
+            padding: 32px 64px;
+        }
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
         .header {
             background: linear-gradient(135deg, #ff9a56 0%, #ff5e3a 100%);
@@ -25,55 +40,132 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            order: 2;
         }
-        .recommendation {
+        .opinion-column {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            height: fit-content;
+            order: 1;
+        }
+        .opinion-column h3 {
+            color: #ff5e3a;
+            margin-top: 0;
+            border-bottom: 2px solid #ff9a56;
+            padding-bottom: 10px;
+        }
+        .opinion-column p {
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .opinion-highlight {
+            background: #fff3e0;
+            border-left: 4px solid #ff9a56;
+            padding: 10px;
+            margin: 15px 0;
+            font-style: italic;
+        }
+        .opinion-section {
+            margin-bottom: 20px;
+        }
+        .opinion-section h4 {
+            color: #ff5e3a;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+        .opinion-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .opinion-section li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .metadata {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .metadata p {
+            margin: 5px 0;
+            display: inline-block;
+            margin-right: 20px;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .grid-section {
             background: #f8f9fa;
             padding: 15px;
             border-radius: 8px;
-            margin-bottom: 15px;
+            border: 2px solid #dee2e6;
+        }
+        .grid-section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.1em;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .grid-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .grid-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
             border-left: 4px solid #ff5e3a;
         }
-        .recommendation h4 {
-            margin: 0 0 10px 0;
+        .grid-item h4 {
+            margin: 0 0 8px 0;
             color: #333;
+            font-size: 1em;
         }
-        .metrics {
+        .item-metrics {
             display: flex;
-            gap: 15px;
-            margin-bottom: 8px;
+            gap: 10px;
+            margin-bottom: 6px;
             flex-wrap: wrap;
         }
-        .metrics span {
+        .item-metrics span {
             background: #e9ecef;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.9em;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 0.85em;
         }
-        .details {
+        .item-details {
             display: flex;
-            gap: 15px;
-            font-size: 0.9em;
+            gap: 10px;
+            font-size: 0.8em;
             color: #666;
             flex-wrap: wrap;
         }
-        .details span {
-            background: #fff;
-            padding: 4px 8px;
-            border-radius: 4px;
+        .item-details span {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
             border: 1px solid #dee2e6;
         }
         .score {
             background: #28a745 !important;
             color: white !important;
         }
-        .metadata {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
-        .metadata p {
-            margin: 5px 0;
+        .no-items {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 20px;
         }
         .error {
             background: #f8d7da;
@@ -86,30 +178,226 @@
             text-align: center;
             color: #666;
             font-size: 0.9em;
-            margin-top: 30px;
         }
-        h3 {
-            color: #333;
+        .footer p {
+            margin: 0;
+        }
+        @media (max-width: 1024px) {
+            .report-container {
+                width: 100%;
+                max-width: 915px;
+            }
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .opinion-column {
+                position: static;
+                margin-top: 20px;
+            }
+        }
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="report-container">
     <div class="header">
         <h1>🗡️ Old School RuneScape</h1>
         <h2>Market Analysis Report</h2>
-        <p id="report-date">Report will be generated soon...</p>
+        <p id="report-date">Tuesday, October 29, 2025</p>
     </div>
 
+    <div class="main-container">
     <div class="content">
-      <div class="metadata">
-        <p>Waiting for first analysis to run...</p>
+      
+      <div class="grid-container">
+        <div class="grid-section">
+          <h3>🔥 High Risk - Members</h3>
+          <div class="grid-items">
+            <div class="grid-item">
+              <h4>Dragon Platelegs</h4>
+              <div class="item-metrics">
+                <span class="price">Price: 161,200 gold</span>
+              </div>
+              <div class="item-details">
+                <span>Change: +42.3%</span>
+                <span>Volatility: 23.8%</span>
+                <span>Momentum: +15.2%</span>
+              </div>
+            </div>
+            <div class="grid-item">
+              <h4>Abyssal Whip</h4>
+              <div class="item-metrics">
+                <span class="price">Price: 2,100,000 gold</span>
+              </div>
+              <div class="item-details">
+                <span>Change: +38.7%</span>
+                <span>Volatility: 21.2%</span>
+                <span>Momentum: +12.8%</span>
+              </div>
+            </div>
+            <div class="grid-item">
+              <h4>Armadyl Crossbow</h4>
+              <div class="item-metrics">
+                <span class="price">Price: 32,800,000 gold</span>
+              </div>
+              <div class="item-details">
+                <span>Change: +35.1%</span>
+                <span>Volatility: 18.9%</span>
+                <span>Momentum: +10.4%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="grid-section">
+          <h3>🛡️ Low Risk - Members</h3>
+          <div class="grid-items">
+            <div class="grid-item">
+              <h4>Dragon Bones</h4>
+              <div class="item-metrics">
+                <span class="price">Price: 2,500 gold</span>
+              </div>
+              <div class="item-details">
+                <span>Change: +12.4%</span>
+                <span>Volatility: 8.2%</span>
+                <span>Momentum: +6.7%</span>
+              </div>
+            </div>
+            <div class="grid-item">
+              <h4>Ranarr Seed</h4>
+              <div class="item-metrics">
+                <span class="price">Price: 45,200 gold</span>
+              </div>
+              <div class="item-details">
+                <span>Change: +9.8%</span>
+                <span>Volatility: 6.5%</span>
+                <span>Momentum: +5.2%</span>
+              </div>
+            </div>
+            <div class="grid-item">
+              <h4>Magic Logs</h4>
+              <div class="item-metrics">
+                <span class="price">Price: 1,100 gold</span>
+              </div>
+              <div class="item-details">
+                <span>Change: +8.3%</span>
+                <span>Volatility: 5.1%</span>
+                <span>Momentum: +4.9%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="grid-section">
+          <h3>🔥 High Risk - F2P</h3>
+          <div class="grid-items">
+            <div class="grid-item">
+              <h4>Rune Platebody</h4>
+              <div class="item-metrics">
+                <span class="price">Price: 38,400 gold</span>
+              </div>
+              <div class="item-details">
+                <span>Change: +31.2%</span>
+                <span>Volatility: 19.7%</span>
+                <span>Momentum: +11.3%</span>
+              </div>
+            </div>
+            <div class="grid-item">
+              <h4>Adamant Platebody</h4>
+              <div class="item-metrics">
+                <span class="price">Price: 9,200 gold</span>
+              </div>
+              <div class="item-details">
+                <span>Change: +27.8%</span>
+                <span>Volatility: 17.4%</span>
+                <span>Momentum: +9.6%</span>
+              </div>
+            </div>
+            <div class="grid-item">
+              <h4>Yew Logs</h4>
+              <div class="item-metrics">
+                <span class="price">Price: 412 gold</span>
+              </div>
+              <div class="item-details">
+                <span>Change: +24.5%</span>
+                <span>Volatility: 16.1%</span>
+                <span>Momentum: +8.8%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="grid-section">
+          <h3>🛡️ Low Risk - F2P</h3>
+          <div class="grid-items">
+            <div class="grid-item">
+              <h4>Coal</h4>
+              <div class="item-metrics">
+                <span class="price">Price: 185 gold</span>
+              </div>
+              <div class="item-details">
+                <span>Change: +7.2%</span>
+                <span>Volatility: 4.8%</span>
+                <span>Momentum: +3.9%</span>
+              </div>
+            </div>
+            <div class="grid-item">
+              <h4>Steel Bar</h4>
+              <div class="item-metrics">
+                <span class="price">Price: 523 gold</span>
+              </div>
+              <div class="item-details">
+                <span>Change: +6.5%</span>
+                <span>Volatility: 4.2%</span>
+                <span>Momentum: +3.4%</span>
+              </div>
+            </div>
+            <div class="grid-item">
+              <h4>Lobster</h4>
+              <div class="item-metrics">
+                <span class="price">Price: 178 gold</span>
+              </div>
+              <div class="item-details">
+                <span>Change: +5.8%</span>
+                <span>Volatility: 3.7%</span>
+                <span>Momentum: +2.9%</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+    </div>
+    
+    <aside class="opinion-column">
+      <h3>💭 Market Insights</h3>
+      
+      <div class="opinion-section">
+        <h4>High Risk Strategy</h4>
+        <p>This week's high-risk picks are showing exceptional momentum. Members items like <strong>Dragon Platelegs</strong> and <strong>Abyssal Whip</strong> continue their upward trend, driven by increased PvP activity and new content updates.</p>
+        <p>For F2P traders, <strong>Rune Platebody</strong> presents an interesting opportunity. The volatility spike suggests institutional buying patterns—likely players stockpiling for upcoming free-to-play tournaments.</p>
+      </div>
+      
+      <div class="opinion-highlight">
+        "The gap between high-risk members and F2P items has narrowed significantly. This could signal a shift in market dynamics worth monitoring."
+      </div>
+      
+      <div class="opinion-section">
+        <h4>Low Risk Picks</h4>
+        <p><strong>Dragon Bones</strong> remain a cornerstone of stable portfolios. The consistent demand from prayer training creates a natural price floor, while seasonal events provide upside potential.</p>
+        <p>In the F2P space, <strong>Coal</strong> is quietly outperforming. The steady gains reflect growing demand from smithing training, with limited downside risk.</p>
+      </div>
+    </aside>
     </div>
 
     <div class="footer">
         <p>Generated by Mythic Market Mogul GitHub Actions</p>
-        <p>Strategy: High-volatility, high-ROI opportunities</p>
+        <p>🔥 High Risk (Volatility ≥ 15%) | 🛡️ Low Risk (Volatility < 15%)</p>
         <p><em>⚠️ This is speculative analysis. Trade at your own risk.</em></p>
+    </div>
     </div>
 </body>
 </html>

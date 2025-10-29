@@ -162,44 +162,29 @@ function calculateMomentum(prices) {
  * @param {number} priceChange - Overall price change percentage
  * @param {number} volatility - Price volatility percentage
  * @param {number} momentum - Recent momentum score
- * @param {number} currentPrice - Current item price
- * @param {number} budget - Total gold available to invest
  * @returns {number} Investment score (0-100)
  */
-function calculateInvestmentScore(priceChange, volatility, momentum, currentPrice, budget) {
-  // Strategy: High-volatility, cheap items for 40-50% ROI potential
+function calculateInvestmentScore(priceChange, volatility, momentum) {
+  // Strategy: High-volatility items with strong momentum for ROI potential
   let score = 50; // Base score
   
-  // High volatility is GOOD for this strategy (up to +25 points)
+  // High volatility is GOOD for this strategy (up to +30 points)
   // Items with 20%+ volatility get max points
   if (volatility >= 20) {
-    score += 25;
+    score += 30;
   } else {
-    score += (volatility / 20) * 25;
+    score += (volatility / 20) * 30;
   }
   
-  // Strong positive momentum is critical (up to +25 points)
-  score += Math.min(momentum * 2.5, 25);
+  // Strong positive momentum is critical (up to +30 points)
+  score += Math.min(momentum * 3, 30);
   
-  // Recent strong price change indicates potential (up to +20 points)
+  // Recent strong price change indicates potential (up to +30 points)
   // Looking for items that have moved 40%+ already
   if (priceChange >= 40) {
-    score += 20;
+    score += 30;
   } else if (priceChange > 0) {
-    score += (priceChange / 40) * 20;
-  }
-  
-  // Cheap items are preferred - can buy more units (up to +20 points)
-  // Items under 50k get bonus points
-  const affordability = Math.min(budget / currentPrice, 50);
-  if (affordability >= 50) {
-    score += 20; // Can buy 50+ units
-  } else if (affordability >= 20) {
-    score += 15; // Can buy 20-49 units
-  } else if (affordability >= 10) {
-    score += 10; // Can buy 10-19 units
-  } else if (affordability >= 5) {
-    score += 5; // Can buy 5-9 units
+    score += (priceChange / 40) * 30;
   }
   
   // Bonus for items showing breakout potential
@@ -213,11 +198,10 @@ function calculateInvestmentScore(priceChange, volatility, momentum, currentPric
 /**
  * Analyzes an item's price history
  * @param {Object} priceData - Raw price data from API
- * @param {Object} itemInfo - Item name and ID
- * @param {number} budget - Total gold available to invest
+ * @param {Object} itemInfo - Item name, ID, and membership status
  * @returns {Object} Analysis results
  */
-function analyzeItem(priceData, itemInfo, budget = 2500000) {
+function analyzeItem(priceData, itemInfo) {
   if (!priceData || !priceData.daily) {
     return null;
   }
@@ -234,21 +218,26 @@ function analyzeItem(priceData, itemInfo, budget = 2500000) {
   
   const currentPrice = prices[prices.length - 1].price;
   const startPrice = prices[0].price;
-  const unitsCanBuy = Math.floor(budget / currentPrice);
   
-  const investmentScore = calculateInvestmentScore(priceChange, volatility, momentum, currentPrice, budget);
+  const investmentScore = calculateInvestmentScore(priceChange, volatility, momentum);
+  
+  // Determine risk level based on volatility
+  // High risk: volatility >= 15%
+  // Low risk: volatility < 15%
+  const riskLevel = parseFloat(volatility) >= 15 ? 'high' : 'low';
   
   return {
     id: itemInfo.id,
     name: itemInfo.name,
     currentPrice,
     startPrice,
-    unitsCanBuy,
     priceChange: priceChange.toFixed(2),
     volatility: volatility.toFixed(2),
     momentum: momentum.toFixed(2),
     investmentScore: investmentScore.toFixed(1),
-    dataPoints: prices.length
+    dataPoints: prices.length,
+    members: itemInfo.members,
+    riskLevel: riskLevel
   };
 }
 
@@ -311,16 +300,7 @@ export async function runOSRS() {
   const includeMembersInput = await promptUser('Include member items? (y/n): ');
   const includeMembers = includeMembersInput.toLowerCase().trim() === 'y';
   
-  // Get investment budget from user first (needed for volume filtering)
-  const budgetInput = await promptUser('Enter your investment budget (gp): ');
-  const INVESTMENT_BUDGET = parseGoldAmount(budgetInput);
-  
-  if (isNaN(INVESTMENT_BUDGET) || INVESTMENT_BUDGET <= 0) {
-    console.error('Invalid budget amount. Please enter a positive number.');
-    process.exit(1);
-  }
-  
-  // Filter items based on member preference and sufficient volume
+  // Filter items based on member preference
   const allItems = Object.entries(itemsData)
     .filter(([id, item]) => {
       // Skip items without required data
@@ -330,21 +310,6 @@ export async function runOSRS() {
       
       // Filter by membership status
       if (!includeMembers && item.members !== false) {
-        return false;
-      }
-      
-      const unitsCanBuy = Math.floor(INVESTMENT_BUDGET / item.price);
-      
-      // Filter out items where we'd hit the buy limit (only if limit exists)
-      if (item.limit !== undefined && unitsCanBuy > item.limit) {
-        return false;
-      }
-      
-      // Filter out items with insufficient volume
-      // Don't include if we could buy more than 10% of daily volume
-      const volumeThreshold = item.volume * 0.1;
-      
-      if (unitsCanBuy > volumeThreshold) {
         return false;
       }
       
@@ -369,8 +334,7 @@ export async function runOSRS() {
     .sort(() => Math.random() - 0.5)
     .slice(0, itemCount);
   
-  console.log(`\nBudget: ${INVESTMENT_BUDGET.toLocaleString()} gp`);
-  console.log(`Items to analyze: ${itemsToAnalyze.length} (${includeMembers ? 'F2P + Members' : 'F2P only'})`);
+  console.log(`\nItems to analyze: ${itemsToAnalyze.length} (${includeMembers ? 'F2P + Members' : 'F2P only'})`);
   console.log(`Analyzing items...\n`);
   
   const results = [];
@@ -383,7 +347,7 @@ export async function runOSRS() {
     const priceData = await fetchPriceHistory(item.id);
     
     if (priceData) {
-      const analysis = analyzeItem(priceData, item, INVESTMENT_BUDGET);
+      const analysis = analyzeItem(priceData, item);
       if (analysis) {
         results.push(analysis);
       }
@@ -403,12 +367,9 @@ export async function runOSRS() {
   console.log('=====================================\n');
   
   results.slice(0, 3).forEach((item, index) => {
-    const totalCost = item.currentPrice * item.unitsCanBuy;
-    
     console.log(`${index + 1}. ${item.name}`);
     console.log(`   Investment Score: ${item.investmentScore}/100`);
     console.log(`   Current Price: ${item.currentPrice.toLocaleString()} gp`);
-    console.log(`   Can Buy: ${item.unitsCanBuy.toLocaleString()} units (${totalCost.toLocaleString()} gp)`);
     console.log(`   Price Change: ${item.priceChange > 0 ? '+' : ''}${item.priceChange}%`);
     console.log(`   Momentum: ${item.momentum > 0 ? '+' : ''}${item.momentum}%`);
     console.log(`   Volatility: ${item.volatility}% ${parseFloat(item.volatility) > 20 ? '🔥' : ''}`);
@@ -420,12 +381,10 @@ export async function runOSRS() {
 
 /**
  * Automated OSRS analysis for GitHub Actions
- * @param {string} budgetInput - Budget string (e.g., "50m")
- * @param {number} maxItems - Maximum items to analyze
  * @param {Object} options - Configuration options
  * @returns {Promise<Object>} Analysis results
  */
-export async function runOSRSAutomated(budgetInput, includeMembers = true, options = {}) {
+export async function runOSRSAutomated(options = {}) {
   const { isGitHubActions = false, logFile = null } = options;
   
   const logMessage = (message) => {
@@ -439,15 +398,7 @@ export async function runOSRSAutomated(budgetInput, includeMembers = true, optio
   logMessage('🚀 OSRS Investment Analyzer (Automated)');
   logMessage('======================================');
   
-  const budget = parseGoldAmount(budgetInput);
-  
-  if (isNaN(budget) || budget <= 0) {
-    throw new Error('Invalid budget amount');
-  }
-
-  logMessage(`Budget: ${budget.toLocaleString()} GP`);
-  logMessage(`Include Members: ${includeMembers}`);
-  logMessage(`Analyzing ALL suitable items`);
+  logMessage(`Analyzing ALL items (Members + F2P)`);
   logMessage(`Mode: ${isGitHubActions ? 'GitHub Actions' : 'Local'}`);
   logMessage('');
 
@@ -459,35 +410,18 @@ export async function runOSRSAutomated(budgetInput, includeMembers = true, optio
     throw new Error('Failed to fetch OSRS item data');
   }
 
-  // Use the includeMembers parameter
-  
-  // Filter items
+  // Filter items - include both members and F2P
   const allItems = Object.entries(itemsData)
     .filter(([id, item]) => {
       if (!item.name || item.price === undefined || item.volume === undefined) {
         return false;
       }
-      
-      if (!includeMembers && item.members !== false) {
-        return false;
-      }
-      
-      const unitsCanBuy = Math.floor(budget / item.price);
-      
-      if (item.limit !== undefined && unitsCanBuy > item.limit) {
-        return false;
-      }
-      
-      const volumeThreshold = item.volume * 0.1;
-      if (unitsCanBuy > volumeThreshold) {
-        return false;
-      }
-      
       return true;
     })
     .map(([id, item]) => ({
       id: parseInt(id),
-      name: item.name
+      name: item.name,
+      members: item.members !== false // true if members item, false if F2P
     }));
 
   logMessage(`Found ${allItems.length} suitable items`);
@@ -513,7 +447,7 @@ export async function runOSRSAutomated(budgetInput, includeMembers = true, optio
     const priceData = await fetchPriceHistory(item.id);
     
     if (priceData) {
-      const analysis = analyzeItem(priceData, item, budget);
+      const analysis = analyzeItem(priceData, item);
       
       if (analysis) {
         results.push(analysis);
@@ -529,16 +463,30 @@ export async function runOSRSAutomated(budgetInput, includeMembers = true, optio
   logMessage('');
   logMessage(`✅ OSRS Analysis Complete! Analyzed ${successfulAnalyses} items`);
 
-  // Sort by investment score
-  results.sort((a, b) => parseFloat(b.investmentScore) - parseFloat(a.investmentScore));
+  // Categorize results into 4 groups
+  const highRiskMembers = results.filter(r => r.members && r.riskLevel === 'high')
+    .sort((a, b) => parseFloat(b.investmentScore) - parseFloat(a.investmentScore))
+    .slice(0, 3);
+  
+  const lowRiskMembers = results.filter(r => r.members && r.riskLevel === 'low')
+    .sort((a, b) => parseFloat(b.investmentScore) - parseFloat(a.investmentScore))
+    .slice(0, 3);
+  
+  const highRiskF2P = results.filter(r => !r.members && r.riskLevel === 'high')
+    .sort((a, b) => parseFloat(b.investmentScore) - parseFloat(a.investmentScore))
+    .slice(0, 3);
+  
+  const lowRiskF2P = results.filter(r => !r.members && r.riskLevel === 'low')
+    .sort((a, b) => parseFloat(b.investmentScore) - parseFloat(a.investmentScore))
+    .slice(0, 3);
 
   return {
-    recommendations: results.slice(0, 10),
+    highRiskMembers,
+    lowRiskMembers,
+    highRiskF2P,
+    lowRiskF2P,
     totalAnalyzed: successfulAnalyses,
-    totalChecked: itemsChecked,
-    budget: budget,
-    budgetString: budgetInput,
-    includeMembers: includeMembers
+    totalChecked: itemsChecked
   };
 }
 
@@ -550,14 +498,7 @@ export async function runOSRSAutomated(budgetInput, includeMembers = true, optio
  * @returns {string} Formatted string
  */
 function formatGP(amount) {
-  if (amount >= 1000000000) {
-    return `${(amount / 1000000000).toFixed(1)}B GP`;
-  } else if (amount >= 1000000) {
-    return `${(amount / 1000000).toFixed(1)}M GP`;
-  } else if (amount >= 1000) {
-    return `${(amount / 1000).toFixed(1)}K GP`;
-  }
-  return `${amount} GP`;
+  return `${amount.toLocaleString()} gold`;
 }
 
 /**
@@ -582,38 +523,58 @@ function generateEmailReport(osrsData) {
       </div>
     `;
   } else {
-    const { recommendations = [], metadata = {} } = osrsData;
+    const { highRiskMembers = [], lowRiskMembers = [], highRiskF2P = [], lowRiskF2P = [], metadata = {} } = osrsData;
     
-    let recommendationsHtml = '';
-    if (recommendations.length > 0) {
-      recommendationsHtml = recommendations.slice(0, 3).map((item, index) => `
-        <div class="recommendation">
-          <h4>${index + 1}. ${item.name}</h4>
-          <div class="metrics">
-            <span class="score">Score: ${item.investmentScore}/100</span>
+    // Helper function to generate items HTML
+    const generateItemsHtml = (items, category) => {
+      if (items.length === 0) {
+        return '<p class="no-items">No items found</p>';
+      }
+      return items.map((item) => `
+        <div class="grid-item">
+          <h4>${item.name}</h4>
+          <div class="item-metrics">
             <span class="price">Price: ${formatGP(item.currentPrice)}</span>
-            <span class="units">Can Buy: ${item.unitsCanBuy?.toLocaleString() || 'N/A'}</span>
           </div>
-          <div class="details">
+          <div class="item-details">
             <span>Change: ${item.priceChange > 0 ? '+' : ''}${item.priceChange}%</span>
             <span>Volatility: ${item.volatility}%</span>
             <span>Momentum: ${item.momentum > 0 ? '+' : ''}${item.momentum}%</span>
           </div>
         </div>
       `).join('');
-    } else {
-      recommendationsHtml = '<p>No recommendations generated.</p>';
-    }
+    };
 
     contentHtml = `
-      <div class="metadata">
-        <p><strong>Budget:</strong> ${metadata.budget || 'N/A'}</p>
-        <p><strong>Include Members:</strong> ${metadata.includeMembers ? 'Yes' : 'No'}</p>
-        <p><strong>Items Analyzed:</strong> ${metadata.itemsAnalyzed || 0}</p>
-        <p><strong>Analysis Time:</strong> ${metadata.analysisTime || 'N/A'}</p>
+      <div class="grid-container">
+        <div class="grid-section">
+          <h3>🔥 High Risk - Members</h3>
+          <div class="grid-items">
+            ${generateItemsHtml(highRiskMembers, 'high-risk-members')}
+          </div>
+        </div>
+        
+        <div class="grid-section">
+          <h3>🛡️ Low Risk - Members</h3>
+          <div class="grid-items">
+            ${generateItemsHtml(lowRiskMembers, 'low-risk-members')}
+          </div>
+        </div>
+        
+        <div class="grid-section">
+          <h3>🔥 High Risk - F2P</h3>
+          <div class="grid-items">
+            ${generateItemsHtml(highRiskF2P, 'high-risk-f2p')}
+          </div>
+        </div>
+        
+        <div class="grid-section">
+          <h3>🛡️ Low Risk - F2P</h3>
+          <div class="grid-items">
+            ${generateItemsHtml(lowRiskF2P, 'low-risk-f2p')}
+          </div>
+        </div>
       </div>
-      <h3>Top Recommendations:</h3>
-      ${recommendationsHtml}
     `;
   }
 
@@ -626,10 +587,10 @@ function generateEmailReport(osrsData) {
     `<p id="report-date">${currentDate}</p>`
   );
   
-  // Update the content section
+  // Update the content section (main grid area only, preserve opinion column)
   template = template.replace(
-    /<div class="content">[\s\S]*?<\/div>\s*<div class="footer">/,
-    `<div class="content">\n      ${contentHtml}\n    </div>\n\n    <div class="footer">`
+    /<div class="content">[\s\S]*?<\/div>\s*<aside class="opinion-column">/,
+    `<div class="content">\n      ${contentHtml}\n    </div>\n    \n    <aside class="opinion-column">`
   );
   
   return template;
@@ -641,21 +602,17 @@ function generateEmailReport(osrsData) {
  * Main entry point when run directly (e.g., node osrs.js or GitHub Actions)
  */
 async function main() {
-  const BUDGET = process.env.BUDGET || '50m';
-  const INCLUDE_MEMBERS = process.env.INCLUDE_MEMBERS === 'true';
   const IS_GITHUB_ACTIONS = process.env.GITHUB_ACTIONS === 'true';
 
   console.log('🚀 OSRS GitHub Actions Analysis');
   console.log('===============================');
-  console.log(`Budget: ${BUDGET}`);
-  console.log(`Include Members: ${INCLUDE_MEMBERS}`);
   console.log(`Environment: ${IS_GITHUB_ACTIONS ? 'GitHub Actions' : 'Local'}`);
   console.log('');
 
   const startTime = Date.now();
   
   try {
-    const results = await runOSRSAutomated(BUDGET, INCLUDE_MEMBERS, {
+    const results = await runOSRSAutomated({
       isGitHubActions: IS_GITHUB_ACTIONS,
       logFile: 'osrs-analysis.log'
     });
@@ -665,8 +622,6 @@ async function main() {
     
     // Add metadata
     results.metadata = {
-      budget: BUDGET,
-      includeMembers: INCLUDE_MEMBERS,
       itemsAnalyzed: results.totalAnalyzed || 0,
       analysisTime: `${Math.floor(analysisTime / 60)}m ${analysisTime % 60}s`,
       timestamp: new Date().toISOString(),
@@ -686,13 +641,12 @@ async function main() {
     console.log('Results saved to osrs-results.json');
     console.log('Email report saved to email-report.html');
     
-    // Log top 3 for GitHub Actions summary
-    if (results.recommendations && results.recommendations.length > 0) {
-      console.log('\n🏆 TOP 3 OSRS RECOMMENDATIONS:');
-      results.recommendations.slice(0, 3).forEach((item, index) => {
-        console.log(`${index + 1}. ${item.name} - Score: ${item.investmentScore}/100`);
-      });
-    }
+    // Log summary for GitHub Actions
+    console.log('\n📊 RESULTS SUMMARY:');
+    console.log(`High Risk Members: ${results.highRiskMembers?.length || 0} items`);
+    console.log(`Low Risk Members: ${results.lowRiskMembers?.length || 0} items`);
+    console.log(`High Risk F2P: ${results.highRiskF2P?.length || 0} items`);
+    console.log(`Low Risk F2P: ${results.lowRiskF2P?.length || 0} items`);
     
   } catch (error) {
     console.error('❌ OSRS Analysis failed:', error.message);
@@ -701,8 +655,6 @@ async function main() {
     const errorResult = {
       error: error.message,
       metadata: {
-        budget: BUDGET,
-        includeMembers: INCLUDE_MEMBERS,
         timestamp: new Date().toISOString(),
         environment: 'GitHub Actions',
         failed: true

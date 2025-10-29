@@ -194,26 +194,24 @@ function calculateMomentum(history) {
  * @param {number} priceChange - Overall price change percentage
  * @param {number} volatility - Price volatility percentage
  * @param {number} momentum - Recent momentum score
- * @param {number} currentPrice - Current item price
- * @param {number} budget - Total ISK available to invest
  * @returns {number} Investment score (0-100)
  */
-function calculateInvestmentScore(priceChange, volatility, momentum, currentPrice, budget) {
-  // Strategy: High-volatility items with positive momentum (buy now, sell later)
+function calculateInvestmentScore(priceChange, volatility, momentum) {
+  // Strategy: High-volatility items with positive momentum
   let score = 50; // Base score
   
-  // High volatility is GOOD for speculation (up to +25 points)
+  // High volatility is GOOD for speculation (up to +35 points)
   // Items with 10%+ volatility get max points
   if (volatility >= 10) {
-    score += 25;
+    score += 35;
   } else {
-    score += (volatility / 10) * 25;
+    score += (volatility / 10) * 35;
   }
   
-  // Strong positive momentum is critical (up to +25 points)
+  // Strong positive momentum is critical (up to +35 points)
   // Price trending up = good time to buy and ride the wave
   if (momentum > 0) {
-    score += Math.min(momentum * 2.5, 25);
+    score += Math.min(momentum * 3.5, 35);
   }
   
   // Recent price increase indicates active trend (up to +20 points)
@@ -225,18 +223,6 @@ function calculateInvestmentScore(priceChange, volatility, momentum, currentPric
   } else if (priceChange < 0 && priceChange > -10) {
     // Small dip might be a buy opportunity
     score += 10;
-  }
-  
-  // Affordable items get bonus (can buy more units) (up to +20 points)
-  const affordability = Math.min(budget / currentPrice, 100);
-  if (affordability >= 100) {
-    score += 20; // Can buy 100+ units
-  } else if (affordability >= 50) {
-    score += 15; // Can buy 50-99 units
-  } else if (affordability >= 20) {
-    score += 10; // Can buy 20-49 units
-  } else if (affordability >= 10) {
-    score += 5; // Can buy 10-19 units
   }
   
   // Bonus for breakout items
@@ -251,10 +237,9 @@ function calculateInvestmentScore(priceChange, volatility, momentum, currentPric
  * Analyzes market data for an item
  * @param {Array} history - Market history data
  * @param {Object} itemInfo - Item name and ID
- * @param {number} budget - ISK budget
  * @returns {Object} Analysis results
  */
-function analyzeItem(history, itemInfo, budget) {
+function analyzeItem(history, itemInfo) {
   if (!history || history.length === 0) {
     return null;
   }
@@ -268,15 +253,13 @@ function analyzeItem(history, itemInfo, budget) {
   
   const currentPrice = history[history.length - 1].average;
   const currentVolume = history[history.length - 1].volume;
-  const unitsCanBuy = Math.floor(budget / currentPrice);
   
-  const investmentScore = calculateInvestmentScore(priceChange, volatility, momentum, currentPrice, budget);
+  const investmentScore = calculateInvestmentScore(priceChange, volatility, momentum);
   
   return {
     id: itemInfo.id,
     name: itemInfo.name,
     currentPrice: Math.round(currentPrice),
-    unitsCanBuy,
     priceChange: priceChange.toFixed(2),
     volatility: volatility.toFixed(2),
     momentum: momentum.toFixed(2),
@@ -333,7 +316,7 @@ function parseISKAmount(input) {
 /**
  * Main application entry point for EVE Online analyzer
  */
-export async function runEVE(budgetInput = null, maxItems = null, options = {}) {
+export async function runEVE(maxItems = null, options = {}) {
   const { isGitHubActions = false, logFile = null } = options;
   
   console.log('🚀 EVE Online Investment Analyzer (Jita)');
@@ -342,24 +325,6 @@ export async function runEVE(budgetInput = null, maxItems = null, options = {}) 
   
   // Items are already loaded from SDE at module level
   console.log(`✅ Using ${TRADEABLE_ITEMS.length} tradeable items for analysis\n`);
-  
-  // Get ISK budget (from parameter or prompt)
-  let budget;
-  if (budgetInput) {
-    budget = parseISKAmount(budgetInput);
-  } else {
-    const inputBudget = await promptUser('Enter your ISK budget: ');
-    budget = parseISKAmount(inputBudget);
-  }
-  
-  if (isNaN(budget) || budget <= 0) {
-    if (isGitHubActions) {
-      throw new Error('Invalid budget amount');
-    } else {
-      console.error('Invalid budget amount. Please enter a positive number.');
-      process.exit(1);
-    }
-  }
   
   // Ask how many items to analyze (from parameter or prompt)
   let itemCount;
@@ -390,8 +355,7 @@ export async function runEVE(budgetInput = null, maxItems = null, options = {}) 
     }
   };
 
-  logMessage(`\nBudget: ${budget.toLocaleString()} ISK`);
-  logMessage(`Market: Jita (The Forge)`);
+  logMessage(`\nMarket: Jita (The Forge)`);
   logMessage(`Target items: ${itemCount}`);
   logMessage(`Mode: ${isGitHubActions ? 'GitHub Actions' : 'Interactive'}`);
   logMessage(`Analyzing items...\n`);
@@ -408,16 +372,10 @@ export async function runEVE(budgetInput = null, maxItems = null, options = {}) 
     const history = await fetchMarketHistory(JITA_REGION_ID, item.id);
     
     if (history && history.length > 0) {
-      const analysis = analyzeItem(history, item, budget);
+      const analysis = analyzeItem(history, item);
       
       if (analysis) {
-        // Filter out items with insufficient volume
-        // Don't include if we could buy more than 10% of daily volume
-        const volumeThreshold = analysis.volume * 0.1;
-        
-        if (analysis.unitsCanBuy <= volumeThreshold) {
-          results.push(analysis);
-        }
+        results.push(analysis);
       }
     }
     
@@ -435,15 +393,12 @@ export async function runEVE(budgetInput = null, maxItems = null, options = {}) 
   console.log('=====================================\n');
   
   results.slice(0, 3).forEach((item, index) => {
-    const totalCost = item.currentPrice * item.unitsCanBuy;
-    
     console.log(`${index + 1}. ${item.name}`);
     console.log(`   Investment Score: ${item.investmentScore}/100`);
     console.log(`   Current Price: ${item.currentPrice.toLocaleString()} ISK`);
-    console.log(`   Can Buy: ${item.unitsCanBuy.toLocaleString()} units (${totalCost.toLocaleString()} ISK)`);
     console.log(`   Price Change: ${item.priceChange > 0 ? '+' : ''}${item.priceChange}%`);
     console.log(`   Momentum: ${item.momentum > 0 ? '+' : ''}${item.momentum}%`);
-    console.log(`   Volatility: ${item.volatility}% ${parseFloat(item.volatility) > 10 ? '�' : ''}`);
+    console.log(`   Volatility: ${item.volatility}% ${parseFloat(item.volatility) > 10 ? '🔥' : ''}`);
     console.log(`   Daily Volume: ${item.volume.toLocaleString()}`);
     console.log('');
   });
@@ -453,12 +408,10 @@ export async function runEVE(budgetInput = null, maxItems = null, options = {}) 
 
 /**
  * Automated EVE analysis for GitHub Actions
- * @param {string} budgetInput - ISK budget string
- * @param {number} maxItems - Maximum items to analyze
  * @param {Object} options - Configuration options
  * @returns {Promise<Object>} Analysis results
  */
-export async function runEVEAutomated(budgetInput, maxItems = null, options = {}) {
+export async function runEVEAutomated(options = {}) {
   const { isGitHubActions = false, logFile = null } = options;
   
   const logMessage = (message) => {
@@ -472,13 +425,6 @@ export async function runEVEAutomated(budgetInput, maxItems = null, options = {}
   logMessage('🚀 EVE Online Investment Analyzer (Automated)');
   logMessage('============================================');
   
-  const budget = parseISKAmount(budgetInput);
-  
-  if (isNaN(budget) || budget <= 0) {
-    throw new Error('Invalid budget amount');
-  }
-
-  logMessage(`Budget: ${budget.toLocaleString()} ISK`);
   logMessage(`Analyzing ALL available items`);
   logMessage(`Mode: ${isGitHubActions ? 'GitHub Actions' : 'Local'}`);
   logMessage('');
@@ -486,9 +432,9 @@ export async function runEVEAutomated(budgetInput, maxItems = null, options = {}
   // Items are already loaded from SDE at module level
   logMessage(`✅ Using ${TRADEABLE_ITEMS.length} tradeable items for analysis`);
 
-  // Analyze ALL items (no limit when maxItems is null)
+  // Analyze ALL items (no limit)
   const shuffledItems = [...TRADEABLE_ITEMS].sort(() => Math.random() - 0.5);
-  const itemsToAnalyze = maxItems ? shuffledItems.slice(0, maxItems) : shuffledItems;
+  const itemsToAnalyze = shuffledItems;
 
   logMessage(`Analyzing ALL ${itemsToAnalyze.length} items...`);
   logMessage('');
@@ -509,16 +455,11 @@ export async function runEVEAutomated(budgetInput, maxItems = null, options = {}
     const history = await fetchMarketHistory(JITA_REGION_ID, item.id);
     
     if (history && history.length > 0) {
-      const analysis = analyzeItem(history, item, budget);
+      const analysis = analyzeItem(history, item);
       
       if (analysis) {
-        // Volume filter
-        const volumeThreshold = analysis.volume * 0.1;
-        
-        if (analysis.unitsCanBuy <= volumeThreshold) {
-          results.push(analysis);
-          successfulAnalyses++;
-        }
+        results.push(analysis);
+        successfulAnalyses++;
       }
     }
     
@@ -535,9 +476,7 @@ export async function runEVEAutomated(budgetInput, maxItems = null, options = {}
   return {
     recommendations: results.slice(0, 10),
     totalAnalyzed: successfulAnalyses,
-    totalChecked: itemsChecked,
-    budget: budget,
-    budgetString: budgetInput
+    totalChecked: itemsChecked
   };
 }
 
@@ -591,7 +530,6 @@ function generateEmailReport(eveData) {
           <div class="metrics">
             <span class="score">Score: ${item.investmentScore}/100</span>
             <span class="price">Price: ${formatISK(item.currentPrice)}</span>
-            <span class="units">Can Buy: ${item.unitsCanBuy?.toLocaleString() || 'N/A'}</span>
           </div>
           <div class="details">
             <span>Change: ${item.priceChange > 0 ? '+' : ''}${item.priceChange}%</span>
@@ -607,7 +545,6 @@ function generateEmailReport(eveData) {
 
     contentHtml = `
       <div class="metadata">
-        <p><strong>Budget:</strong> ${metadata.budget || 'N/A'}</p>
         <p><strong>Market:</strong> Jita (The Forge)</p>
         <p><strong>Items Analyzed:</strong> ${metadata.itemsAnalyzed || 0}</p>
         <p><strong>Analysis Time:</strong> ${metadata.analysisTime || 'N/A'}</p>
@@ -641,12 +578,10 @@ function generateEmailReport(eveData) {
  * Main entry point when run directly (e.g., node eve.js or GitHub Actions)
  */
 async function main() {
-  const BUDGET = process.env.BUDGET || '1b';
   const IS_GITHUB_ACTIONS = process.env.GITHUB_ACTIONS === 'true';
 
   console.log('🚀 EVE Online GitHub Actions Analysis');
   console.log('====================================');
-  console.log(`Budget: ${BUDGET}`);
   console.log(`Analyzing ALL available items`);
   console.log(`Environment: ${IS_GITHUB_ACTIONS ? 'GitHub Actions' : 'Local'}`);
   console.log('');
@@ -654,7 +589,7 @@ async function main() {
   const startTime = Date.now();
   
   try {
-    const results = await runEVEAutomated(BUDGET, null, {
+    const results = await runEVEAutomated({
       isGitHubActions: IS_GITHUB_ACTIONS,
       logFile: 'eve-analysis.log'
     });
@@ -664,7 +599,6 @@ async function main() {
     
     // Add metadata
     results.metadata = {
-      budget: BUDGET,
       itemsAnalyzed: results.totalAnalyzed || 0,
       analysisTime: `${Math.floor(analysisTime / 60)}m ${analysisTime % 60}s`,
       timestamp: new Date().toISOString(),
@@ -699,7 +633,6 @@ async function main() {
     const errorResult = {
       error: error.message,
       metadata: {
-        budget: BUDGET,
         timestamp: new Date().toISOString(),
         environment: 'GitHub Actions',
         failed: true
