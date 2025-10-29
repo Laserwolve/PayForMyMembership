@@ -196,9 +196,22 @@ function calculateInvestmentScore(priceChange, volatility, momentum) {
 }
 
 /**
+ * Categorizes volume into descriptive levels
+ * @param {number} volume - Trading volume
+ * @returns {string} Volume category
+ */
+function categorizeVolume(volume) {
+  if (volume >= 1000000) return 'Very High';
+  if (volume >= 100000) return 'High';
+  if (volume >= 10000) return 'Medium';
+  if (volume >= 1000) return 'Low';
+  return 'Very Low';
+}
+
+/**
  * Analyzes an item's price history
  * @param {Object} priceData - Raw price data from API
- * @param {Object} itemInfo - Item name, ID, and membership status
+ * @param {Object} itemInfo - Item name, ID, membership status, and volume
  * @returns {Object} Analysis results
  */
 function analyzeItem(priceData, itemInfo) {
@@ -232,6 +245,8 @@ function analyzeItem(priceData, itemInfo) {
     currentPrice,
     startPrice,
     priceChange: priceChange.toFixed(2),
+    volume: itemInfo.volume || 0,
+    volumeCategory: categorizeVolume(itemInfo.volume || 0),
     volatility: volatility.toFixed(2),
     momentum: momentum.toFixed(2),
     investmentScore: investmentScore.toFixed(1),
@@ -317,7 +332,8 @@ export async function runOSRS() {
     })
     .map(([id, item]) => ({
       id: parseInt(id),
-      name: item.name
+      name: item.name,
+      volume: item.volume
     }));
   
   // Ask how many items to analyze
@@ -421,7 +437,8 @@ export async function runOSRSAutomated(options = {}) {
     .map(([id, item]) => ({
       id: parseInt(id),
       name: item.name,
-      members: item.members !== false // true if members item, false if F2P
+      members: item.members !== false, // true if members item, false if F2P
+      volume: item.volume
     }));
 
   logMessage(`Found ${allItems.length} suitable items`);
@@ -531,47 +548,49 @@ function generateEmailReport(osrsData) {
         return '<p class="no-items">No items found</p>';
       }
       return items.map((item) => `
-        <div class="grid-item">
-          <h4>${item.name}</h4>
-          <div class="item-metrics">
-            <span class="price">Price: ${formatGP(item.currentPrice)}</span>
-          </div>
-          <div class="item-details">
-            <span>Change: ${item.priceChange > 0 ? '+' : ''}${item.priceChange}%</span>
-            <span>Volatility: ${item.volatility}%</span>
-            <span>Momentum: ${item.momentum > 0 ? '+' : ''}${item.momentum}%</span>
-          </div>
-        </div>
-      `).join('');
+            <div class="grid-item">
+              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=${item.id}" alt="${item.name}">
+              <div class="grid-item-content">
+                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=${item.id}" target="_blank" style="color: #333; text-decoration: none;">${item.name}</a></h4>
+                <div class="item-metrics">
+                  <span>Price: ${formatGP(item.currentPrice)}</span>
+                  <span>Volume: ${item.volumeCategory}</span>
+                  <span>Volatility: ${item.volatility}%</span>
+                  <span>Momentum: ${item.momentum > 0 ? '+' : ''}${item.momentum}%</span>
+                </div>
+              </div>
+            </div>`).join('\n');
     };
 
     contentHtml = `
+      <h2 style="text-align: center; margin-top: 0;">Recommendations</h2>
+      
       <div class="grid-container">
         <div class="grid-section">
-          <h3>🔥 High Risk - Members</h3>
+          <h3>High Risk — Members</h3>
           <div class="grid-items">
-            ${generateItemsHtml(highRiskMembers, 'high-risk-members')}
+${generateItemsHtml(highRiskMembers, 'high-risk-members')}
           </div>
         </div>
         
         <div class="grid-section">
-          <h3>🛡️ Low Risk - Members</h3>
+          <h3>Low Risk — Members</h3>
           <div class="grid-items">
-            ${generateItemsHtml(lowRiskMembers, 'low-risk-members')}
+${generateItemsHtml(lowRiskMembers, 'low-risk-members')}
           </div>
         </div>
         
         <div class="grid-section">
-          <h3>🔥 High Risk - F2P</h3>
+          <h3>High Risk — Free to Play</h3>
           <div class="grid-items">
-            ${generateItemsHtml(highRiskF2P, 'high-risk-f2p')}
+${generateItemsHtml(highRiskF2P, 'high-risk-f2p')}
           </div>
         </div>
         
         <div class="grid-section">
-          <h3>🛡️ Low Risk - F2P</h3>
+          <h3>Low Risk — Free to Play</h3>
           <div class="grid-items">
-            ${generateItemsHtml(lowRiskF2P, 'low-risk-f2p')}
+${generateItemsHtml(lowRiskF2P, 'low-risk-f2p')}
           </div>
         </div>
       </div>
@@ -583,14 +602,14 @@ function generateEmailReport(osrsData) {
   
   // Update the date
   template = template.replace(
-    /<p id="report-date">.*?<\/p>/,
-    `<p id="report-date">${currentDate}</p>`
+    /<span id="report-date">.*?<\/span>/,
+    `<span id="report-date">${currentDate}</span>`
   );
   
   // Update the content section (main grid area only, preserve opinion column)
   template = template.replace(
     /<div class="content">[\s\S]*?<\/div>\s*<aside class="opinion-column">/,
-    `<div class="content">\n      ${contentHtml}\n    </div>\n    \n    <aside class="opinion-column">`
+    `<div class="content">\n${contentHtml}\n    </div>\n    \n    <aside class="opinion-column">`
   );
   
   return template;
@@ -631,15 +650,15 @@ async function main() {
     // Save results to JSON
     fs.writeFileSync('osrs-results.json', JSON.stringify(results, null, 2));
     
-    // Generate and save email report
-    const emailHtml = generateEmailReport(results);
-    fs.writeFileSync('email-report.html', emailHtml);
+    // Generate and update the index.html file
+    const reportHtml = generateEmailReport(results);
+    fs.writeFileSync('docs/osrs/index.html', reportHtml);
     
     console.log('\n✅ OSRS Analysis Complete!');
     console.log(`Total time: ${results.metadata.analysisTime}`);
     console.log(`Items analyzed: ${results.metadata.itemsAnalyzed}`);
     console.log('Results saved to osrs-results.json');
-    console.log('Email report saved to email-report.html');
+    console.log('Updated docs/osrs/index.html');
     
     // Log summary for GitHub Actions
     console.log('\n📊 RESULTS SUMMARY:');
@@ -663,9 +682,9 @@ async function main() {
     
     fs.writeFileSync('osrs-results.json', JSON.stringify(errorResult, null, 2));
     
-    // Generate error email report
-    const emailHtml = generateEmailReport(errorResult);
-    fs.writeFileSync('email-report.html', emailHtml);
+    // Generate error report and update index.html
+    const reportHtml = generateEmailReport(errorResult);
+    fs.writeFileSync('docs/osrs/index.html', reportHtml);
     
     process.exit(1);
   }

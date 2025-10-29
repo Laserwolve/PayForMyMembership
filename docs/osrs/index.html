@@ -160,6 +160,17 @@
             padding: 12px;
             border-radius: 6px;
             border-left: 4px solid #ff5e3a;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .grid-item img {
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+        }
+        .grid-item-content {
+            flex: 1;
         }
         .grid-item h4 {
             margin: 0 0 8px 0;
@@ -169,7 +180,6 @@
         .item-metrics {
             display: flex;
             gap: 10px;
-            margin-bottom: 6px;
             flex-wrap: wrap;
         }
         .item-metrics span {
@@ -177,19 +187,6 @@
             padding: 3px 6px;
             border-radius: 3px;
             font-size: 0.85em;
-        }
-        .item-details {
-            display: flex;
-            gap: 10px;
-            font-size: 0.8em;
-            color: #666;
-            flex-wrap: wrap;
-        }
-        .item-details span {
-            background: #f8f9fa;
-            padding: 2px 6px;
-            border-radius: 3px;
-            border: 1px solid #dee2e6;
         }
         .score {
             background: #28a745 !important;
@@ -254,36 +251,39 @@
           <h3>High Risk — Members</h3>
           <div class="grid-items">
             <div class="grid-item">
-              <h4>Dragon Platelegs</h4>
-              <div class="item-metrics">
-                <span class="price">Price: 161,200 gold</span>
-              </div>
-              <div class="item-details">
-                <span>Change: +42.3%</span>
-                <span>Volatility: 23.8%</span>
-                <span>Momentum: +15.2%</span>
-              </div>
-            </div>
-            <div class="grid-item">
-              <h4>Abyssal Whip</h4>
-              <div class="item-metrics">
-                <span class="price">Price: 2,100,000 gold</span>
-              </div>
-              <div class="item-details">
-                <span>Change: +38.7%</span>
-                <span>Volatility: 21.2%</span>
-                <span>Momentum: +12.8%</span>
+              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=4087" alt="Dragon Platelegs">
+              <div class="grid-item-content">
+                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=4087" target="_blank" style="color: #333; text-decoration: none;">Dragon Platelegs</a></h4>
+                <div class="item-metrics">
+                  <span>Price: 161,200 gold</span>
+                  <span>Volume: Very High</span>
+                  <span>Volatility: 23.8%</span>
+                  <span>Momentum: +15.2%</span>
+                </div>
               </div>
             </div>
             <div class="grid-item">
-              <h4>Armadyl Crossbow</h4>
-              <div class="item-metrics">
-                <span class="price">Price: 32,800,000 gold</span>
+              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=4151" alt="Abyssal Whip">
+              <div class="grid-item-content">
+                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=4151" target="_blank" style="color: #333; text-decoration: none;">Abyssal Whip</a></h4>
+                <div class="item-metrics">
+                  <span>Price: 2,100,000 gold</span>
+                  <span>Volume: Very High</span>
+                  <span>Volatility: 21.2%</span>
+                  <span>Momentum: +12.8%</span>
+                </div>
               </div>
-              <div class="item-details">
-                <span>Change: +35.1%</span>
-                <span>Volatility: 18.9%</span>
-                <span>Momentum: +10.4%</span>
+            </div>
+            <div class="grid-item">
+              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=11785" alt="Armadyl Crossbow">
+              <div class="grid-item-content">
+                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=11785" target="_blank" style="color: #333; text-decoration: none;">Armadyl Crossbow</a></h4>
+                <div class="item-metrics">
+                  <span>Price: 32,800,000 gold</span>
+                  <span>Volume: High</span>
+                  <span>Volatility: 18.9%</span>
+                  <span>Momentum: +10.4%</span>
+                </div>
               </div>
             </div>
           </div>
@@ -293,36 +293,39 @@
           <h3>Low Risk — Members</h3>
           <div class="grid-items">
             <div class="grid-item">
-              <h4>Dragon Bones</h4>
-              <div class="item-metrics">
-                <span class="price">Price: 2,500 gold</span>
-              </div>
-              <div class="item-details">
-                <span>Change: +12.4%</span>
-                <span>Volatility: 8.2%</span>
-                <span>Momentum: +6.7%</span>
-              </div>
-            </div>
-            <div class="grid-item">
-              <h4>Ranarr Seed</h4>
-              <div class="item-metrics">
-                <span class="price">Price: 45,200 gold</span>
-              </div>
-              <div class="item-details">
-                <span>Change: +9.8%</span>
-                <span>Volatility: 6.5%</span>
-                <span>Momentum: +5.2%</span>
+              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=536" alt="Dragon Bones">
+              <div class="grid-item-content">
+                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=536" target="_blank" style="color: #333; text-decoration: none;">Dragon Bones</a></h4>
+                <div class="item-metrics">
+                  <span>Price: 2,500 gold</span>
+                  <span>Volume: Medium</span>
+                  <span>Volatility: 8.2%</span>
+                  <span>Momentum: +6.7%</span>
+                </div>
               </div>
             </div>
             <div class="grid-item">
-              <h4>Magic Logs</h4>
-              <div class="item-metrics">
-                <span class="price">Price: 1,100 gold</span>
+              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=5295" alt="Ranarr Seed">
+              <div class="grid-item-content">
+                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=5295" target="_blank" style="color: #333; text-decoration: none;">Ranarr Seed</a></h4>
+                <div class="item-metrics">
+                  <span>Price: 45,200 gold</span>
+                  <span>Volume: Low</span>
+                  <span>Volatility: 6.5%</span>
+                  <span>Momentum: +5.2%</span>
+                </div>
               </div>
-              <div class="item-details">
-                <span>Change: +8.3%</span>
-                <span>Volatility: 5.1%</span>
-                <span>Momentum: +4.9%</span>
+            </div>
+            <div class="grid-item">
+              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=1513" alt="Magic Logs">
+              <div class="grid-item-content">
+                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=1513" target="_blank" style="color: #333; text-decoration: none;">Magic Logs</a></h4>
+                <div class="item-metrics">
+                  <span>Price: 1,100 gold</span>
+                  <span>Volume: Low</span>
+                  <span>Volatility: 5.1%</span>
+                  <span>Momentum: +4.9%</span>
+                </div>
               </div>
             </div>
           </div>
@@ -332,36 +335,39 @@
           <h3>High Risk — Free to Play</h3>
           <div class="grid-items">
             <div class="grid-item">
-              <h4>Rune Platebody</h4>
-              <div class="item-metrics">
-                <span class="price">Price: 38,400 gold</span>
-              </div>
-              <div class="item-details">
-                <span>Change: +31.2%</span>
-                <span>Volatility: 19.7%</span>
-                <span>Momentum: +11.3%</span>
-              </div>
-            </div>
-            <div class="grid-item">
-              <h4>Adamant Platebody</h4>
-              <div class="item-metrics">
-                <span class="price">Price: 9,200 gold</span>
-              </div>
-              <div class="item-details">
-                <span>Change: +27.8%</span>
-                <span>Volatility: 17.4%</span>
-                <span>Momentum: +9.6%</span>
+              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=1127" alt="Rune Platebody">
+              <div class="grid-item-content">
+                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=1127" target="_blank" style="color: #333; text-decoration: none;">Rune Platebody</a></h4>
+                <div class="item-metrics">
+                  <span>Price: 38,400 gold</span>
+                  <span>Volume: High</span>
+                  <span>Volatility: 19.7%</span>
+                  <span>Momentum: +11.3%</span>
+                </div>
               </div>
             </div>
             <div class="grid-item">
-              <h4>Yew Logs</h4>
-              <div class="item-metrics">
-                <span class="price">Price: 412 gold</span>
+              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=1123" alt="Adamant Platebody">
+              <div class="grid-item-content">
+                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=1123" target="_blank" style="color: #333; text-decoration: none;">Adamant Platebody</a></h4>
+                <div class="item-metrics">
+                  <span>Price: 9,200 gold</span>
+                  <span>Volume: High</span>
+                  <span>Volatility: 17.4%</span>
+                  <span>Momentum: +9.6%</span>
+                </div>
               </div>
-              <div class="item-details">
-                <span>Change: +24.5%</span>
-                <span>Volatility: 16.1%</span>
-                <span>Momentum: +8.8%</span>
+            </div>
+            <div class="grid-item">
+              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=1515" alt="Yew Logs">
+              <div class="grid-item-content">
+                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=1515" target="_blank" style="color: #333; text-decoration: none;">Yew Logs</a></h4>
+                <div class="item-metrics">
+                  <span>Price: 412 gold</span>
+                  <span>Volume: Medium</span>
+                  <span>Volatility: 16.1%</span>
+                  <span>Momentum: +8.8%</span>
+                </div>
               </div>
             </div>
           </div>
@@ -371,36 +377,39 @@
           <h3>Low Risk — Free to Play</h3>
           <div class="grid-items">
             <div class="grid-item">
-              <h4>Coal</h4>
-              <div class="item-metrics">
-                <span class="price">Price: 185 gold</span>
-              </div>
-              <div class="item-details">
-                <span>Change: +7.2%</span>
-                <span>Volatility: 4.8%</span>
-                <span>Momentum: +3.9%</span>
-              </div>
-            </div>
-            <div class="grid-item">
-              <h4>Steel Bar</h4>
-              <div class="item-metrics">
-                <span class="price">Price: 523 gold</span>
-              </div>
-              <div class="item-details">
-                <span>Change: +6.5%</span>
-                <span>Volatility: 4.2%</span>
-                <span>Momentum: +3.4%</span>
+              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=453" alt="Coal">
+              <div class="grid-item-content">
+                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=453" target="_blank" style="color: #333; text-decoration: none;">Coal</a></h4>
+                <div class="item-metrics">
+                  <span>Price: 185 gold</span>
+                  <span>Volume: Very Low</span>
+                  <span>Volatility: 4.8%</span>
+                  <span>Momentum: +3.9%</span>
+                </div>
               </div>
             </div>
             <div class="grid-item">
-              <h4>Lobster</h4>
-              <div class="item-metrics">
-                <span class="price">Price: 178 gold</span>
+              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=2353" alt="Steel Bar">
+              <div class="grid-item-content">
+                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=2353" target="_blank" style="color: #333; text-decoration: none;">Steel Bar</a></h4>
+                <div class="item-metrics">
+                  <span>Price: 523 gold</span>
+                  <span>Volume: Very Low</span>
+                  <span>Volatility: 4.2%</span>
+                  <span>Momentum: +3.4%</span>
+                </div>
               </div>
-              <div class="item-details">
-                <span>Change: +5.8%</span>
-                <span>Volatility: 3.7%</span>
-                <span>Momentum: +2.9%</span>
+            </div>
+            <div class="grid-item">
+              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=379" alt="Lobster">
+              <div class="grid-item-content">
+                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=379" target="_blank" style="color: #333; text-decoration: none;">Lobster</a></h4>
+                <div class="item-metrics">
+                  <span>Price: 178 gold</span>
+                  <span>Volume: Very Low</span>
+                  <span>Volatility: 3.7%</span>
+                  <span>Momentum: +2.9%</span>
+                </div>
               </div>
             </div>
           </div>
