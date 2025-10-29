@@ -194,11 +194,7 @@
         <div class="latest-report" id="latest-report-section">
             <h2>📊 Latest Report</h2>
             <div id="latest-content">
-                <div class="empty-state">
-                    <div class="icon">📭</div>
-                    <h3>No reports yet</h3>
-                    <p>Reports will appear here once the automated analysis runs.</p>
-                </div>
+                <iframe src="latest.html" style="width: 100%; min-height: 800px; border: none; border-radius: 5px;"></iframe>
             </div>
         </div>
         
@@ -217,17 +213,5 @@
     <footer>
         <p>&copy; 2025 Vineyard Technologies | <a href="https://github.com/Vineyard-Technologies/MythicMarketMogul" style="color: #DAA520;">GitHub</a></p>
     </footer>
-    
-    <script>
-        // This will automatically populate with reports from the workflow
-        // Reports should be named: YYYY-MM-DD.html
-        async function loadReports() {
-            // For now, this is a placeholder. The GitHub Actions workflow
-            // will generate dated reports that can be linked here.
-            // Future enhancement: Add a reports.json manifest file
-        }
-        
-        loadReports();
-    </script>
 </body>
 </html>

@@ -38,38 +38,25 @@ jobs:
         GITHUB_ACTIONS: 'true'
       run: node src/osrs.js
       
-    - name: Upload OSRS Results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: osrs-analysis-results-${{ github.run_number }}
-        path: |
-          osrs-results.json
-          osrs-analysis.log
-          email-report.html
-        retention-days: 30
-
-  send-email-report:
-    runs-on: ubuntu-latest
-    needs: [osrs-analysis]
-    if: always()
-    
-    steps:
-    - name: Download OSRS Results
-      uses: actions/download-artifact@v4
-      with:
-        name: osrs-analysis-results-${{ github.run_number }}
-      continue-on-error: true
+    - name: Prepare reports directory
+      run: |
+        mkdir -p docs/osrs/archive
+        REPORT_DATE=$(date +%Y-%m-%d)
         
-    - name: Send Email Report
-      uses: dawidd6/action-send-mail@v3
-      with:
-        server_address: smtp.gmail.com
-        server_port: 587
-        username: ${{ secrets.EMAIL_USERNAME }}
-        password: ${{ secrets.EMAIL_PASSWORD }}
-        subject: "OSRS Market Analysis Report - ${{ github.run_number }}"
-        to: laserwolve@gmail.com
-        from: Mythic Market Mogul <${{ secrets.EMAIL_USERNAME }}>
-        html_body: file://email-report.html
-        priority: normal
+        # Update main page with latest report
+        cp email-report.html docs/osrs/index.html
+        
+        # Archive dated report
+        cp email-report.html docs/osrs/archive/${REPORT_DATE}.html
+        
+        # Copy JSON data
+        cp osrs-results.json docs/osrs/data.json
+        cp osrs-results.json docs/osrs/archive/${REPORT_DATE}.json
+        
+    - name: Commit and push reports
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add docs/osrs/
+        git commit -m "Update OSRS market analysis - $(date +%Y-%m-%d)" || echo "No changes to commit"
+        git push
