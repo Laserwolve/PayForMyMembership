@@ -2,6 +2,13 @@
 
 A Node.js application that analyzes in-game market data to find profitable premium currency trading opportunities across multiple MMO games.
 
+## Live Reports
+
+- **OSRS Report**: https://reports.vineyardtechnologies.org/osrs/
+- **EVE Online Report**: https://reports.vineyardtechnologies.org/eve/
+
+Updated daily with fresh market analysis and investment recommendations.
+
 ## Supported Games
 
 - **Old School RuneScape**: Analyze item prices to maximize ROI before buying Bonds
