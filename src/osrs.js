@@ -44,11 +44,17 @@ async function fetchPriceHistory(itemId) {
         'User-Agent': USER_AGENT
       }
     });
+    
+    console.log(`  API Response for item ${itemId}: Status=${response.status}, OK=${response.ok}, Headers:`, Object.fromEntries(response.headers.entries()));
+    
     if (!response.ok) {
       throw new Error(`Failed to fetch item ${itemId}: ${response.status}`);
     }
     
-    const data = await response.json();
+    const text = await response.text();
+    console.log(`  Response body length: ${text.length} chars, First 100 chars: ${text.substring(0, 100)}`);
+    
+    const data = JSON.parse(text);
     return data;
   } catch (error) {
     console.error(`Error fetching data for item ${itemId}:`, error.message);
@@ -369,8 +375,8 @@ export async function runOSRS() {
       }
     }
     
-    // Rate limit: 1000ms delay between requests to avoid rate limiting
-    await delay(1000);
+    // Rate limit: 2000ms delay between requests to avoid rate limiting
+    await delay(2000);
   }
   
   console.log('\n\n✅ Analysis Complete!\n');
@@ -473,8 +479,8 @@ export async function runOSRSAutomated(options = {}) {
       }
     }
     
-    // Rate limiting
-    await delay(1000);
+    // Rate limiting: 2000ms delay between requests
+    await delay(2000);
   }
 
   logMessage('');
