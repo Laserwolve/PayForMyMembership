@@ -200,37 +200,60 @@ function calculateInvestmentScore(priceChange, volatility, momentum) {
   // Strategy: High-volatility items with positive momentum
   let score = 50; // Base score
   
-  // High volatility is GOOD for speculation (up to +35 points)
-  // Items with 10%+ volatility get max points
-  if (volatility >= 10) {
-    score += 35;
+  // High volatility is GOOD for speculation (up to +30 points)
+  // Items with 20%+ volatility get max points
+  if (volatility >= 20) {
+    score += 30;
   } else {
-    score += (volatility / 10) * 35;
+    score += (volatility / 20) * 30;
   }
   
-  // Strong positive momentum is critical (up to +35 points)
-  // Price trending up = good time to buy and ride the wave
-  if (momentum > 0) {
-    score += Math.min(momentum * 3.5, 35);
-  }
+  // Strong positive momentum is critical (up to +30 points)
+  score += Math.min(momentum * 3, 30);
   
-  // Recent price increase indicates active trend (up to +20 points)
-  // Looking for items that are moving
-  if (priceChange >= 20) {
-    score += 20;
+  // Recent strong price change indicates potential (up to +30 points)
+  // Looking for items that have moved 40%+ already
+  if (priceChange >= 40) {
+    score += 30;
   } else if (priceChange > 0) {
-    score += (priceChange / 20) * 20;
-  } else if (priceChange < 0 && priceChange > -10) {
-    // Small dip might be a buy opportunity
-    score += 10;
+    score += (priceChange / 40) * 30;
   }
   
-  // Bonus for breakout items
-  if (momentum > 5 && priceChange > 15 && volatility > 8) {
+  // Bonus for items showing breakout potential
+  if (momentum > 10 && priceChange > 30 && volatility > 15) {
     score += 10; // Hot item bonus
   }
   
   return Math.max(0, Math.min(100, score));
+}
+
+/**
+ * Categorizes volume into descriptive levels
+ * @param {number} volume - Trading volume
+ * @returns {string} Volume category
+ */
+function categorizeVolume(volume) {
+  if (volume >= 10000) return 'Very High';
+  if (volume >= 1000) return 'High';
+  if (volume >= 100) return 'Medium';
+  if (volume >= 10) return 'Low';
+  return 'Very Low';
+}
+
+/**
+ * Formats ISK amount with appropriate suffix
+ * @param {number} amount - ISK amount
+ * @returns {string} Formatted string
+ */
+function formatISK(amount) {
+  if (amount >= 1000000000) {
+    return `${(amount / 1000000000).toFixed(1)}B ISK`;
+  } else if (amount >= 1000000) {
+    return `${(amount / 1000000).toFixed(1)}M ISK`;
+  } else if (amount >= 1000) {
+    return `${(amount / 1000).toFixed(1)}K ISK`;
+  }
+  return `${Math.round(amount).toLocaleString()} ISK`;
 }
 
 /**
@@ -256,6 +279,11 @@ function analyzeItem(history, itemInfo) {
   
   const investmentScore = calculateInvestmentScore(priceChange, volatility, momentum);
   
+  // Determine risk level based on volatility
+  // High risk: volatility >= 15%
+  // Low risk: volatility < 15%
+  const riskLevel = parseFloat(volatility) >= 15 ? 'high' : 'low';
+  
   return {
     id: itemInfo.id,
     name: itemInfo.name,
@@ -264,8 +292,10 @@ function analyzeItem(history, itemInfo) {
     volatility: volatility.toFixed(2),
     momentum: momentum.toFixed(2),
     volume: currentVolume,
+    volumeCategory: categorizeVolume(currentVolume || 0),
     investmentScore: investmentScore.toFixed(1),
-    dataPoints: history.length
+    dataPoints: history.length,
+    riskLevel: riskLevel
   };
 }
 
@@ -470,33 +500,24 @@ export async function runEVEAutomated(options = {}) {
   logMessage('');
   logMessage(`✅ EVE Analysis Complete! Analyzed ${successfulAnalyses} items`);
 
-  // Sort by investment score
-  results.sort((a, b) => parseFloat(b.investmentScore) - parseFloat(a.investmentScore));
+  // Categorize results into 2 groups (no members in EVE)
+  const highRisk = results.filter(r => r.riskLevel === 'high')
+    .sort((a, b) => parseFloat(b.investmentScore) - parseFloat(a.investmentScore))
+    .slice(0, 5);
+  
+  const lowRisk = results.filter(r => r.riskLevel === 'low')
+    .sort((a, b) => parseFloat(b.investmentScore) - parseFloat(a.investmentScore))
+    .slice(0, 5);
 
   return {
-    recommendations: results.slice(0, 10),
+    highRisk,
+    lowRisk,
     totalAnalyzed: successfulAnalyses,
     totalChecked: itemsChecked
   };
 }
 
 // ===== EMAIL REPORT GENERATION =====
-
-/**
- * Formats ISK amount with appropriate suffix
- * @param {number} amount - ISK amount
- * @returns {string} Formatted string
- */
-function formatISK(amount) {
-  if (amount >= 1000000000) {
-    return `${(amount / 1000000000).toFixed(1)}B ISK`;
-  } else if (amount >= 1000000) {
-    return `${(amount / 1000000).toFixed(1)}M ISK`;
-  } else if (amount >= 1000) {
-    return `${(amount / 1000).toFixed(1)}K ISK`;
-  }
-  return `${amount} ISK`;
-}
 
 /**
  * Generates HTML email report from EVE analysis results
@@ -520,37 +541,45 @@ function generateEmailReport(eveData) {
       </div>
     `;
   } else {
-    const { recommendations = [], metadata = {} } = eveData;
+    const { highRisk = [], lowRisk = [], metadata = {} } = eveData;
     
-    let recommendationsHtml = '';
-    if (recommendations.length > 0) {
-      recommendationsHtml = recommendations.slice(0, 3).map((item, index) => `
-        <div class="recommendation">
-          <h4>${index + 1}. ${item.name}</h4>
-          <div class="metrics">
-            <span class="score">Score: ${item.investmentScore}/100</span>
-            <span class="price">Price: ${formatISK(item.currentPrice)}</span>
-          </div>
-          <div class="details">
-            <span>Change: ${item.priceChange > 0 ? '+' : ''}${item.priceChange}%</span>
-            <span>Volatility: ${item.volatility}%</span>
-            <span>Momentum: ${item.momentum > 0 ? '+' : ''}${item.momentum}%</span>
-            <span>Volume: ${item.volume?.toLocaleString() || 'N/A'}</span>
-          </div>
-        </div>
-      `).join('');
-    } else {
-      recommendationsHtml = '<p>No recommendations generated.</p>';
-    }
+    // Helper function to generate items HTML
+    const generateItemsHtml = (items, category) => {
+      if (items.length === 0) {
+        return '<p class="no-items">No items found</p>';
+      }
+      return items.map((item) => `
+            <div class="grid-item">
+              <div class="grid-item-content">
+                <h4>${item.name}</h4>
+                <div class="item-metrics">
+                  <span>Price: ${formatISK(item.currentPrice)}</span>
+                  <span>Volume: ${item.volumeCategory}</span>
+                  <span>Volatility: ${item.volatility}%</span>
+                  <span>Momentum: ${item.momentum > 0 ? '+' : ''}${item.momentum}%</span>
+                </div>
+              </div>
+            </div>`).join('\n');
+    };
 
     contentHtml = `
-      <div class="metadata">
-        <p><strong>Market:</strong> Jita (The Forge)</p>
-        <p><strong>Items Analyzed:</strong> ${metadata.itemsAnalyzed || 0}</p>
-        <p><strong>Analysis Time:</strong> ${metadata.analysisTime || 'N/A'}</p>
+      <h2 style="text-align: center; margin-top: 0;">Recommendations</h2>
+      
+      <div class="grid-container">
+        <div class="grid-section">
+          <h3>High Risk</h3>
+          <div class="grid-items">
+${generateItemsHtml(highRisk, 'high-risk')}
+          </div>
+        </div>
+        
+        <div class="grid-section">
+          <h3>Low Risk</h3>
+          <div class="grid-items">
+${generateItemsHtml(lowRisk, 'low-risk')}
+          </div>
+        </div>
       </div>
-      <h3>Top Recommendations:</h3>
-      ${recommendationsHtml}
     `;
   }
 
@@ -559,14 +588,14 @@ function generateEmailReport(eveData) {
   
   // Update the date
   template = template.replace(
-    /<p id="report-date">.*?<\/p>/,
-    `<p id="report-date">${currentDate}</p>`
+    /<span id="report-date">.*?<\/span>/,
+    `<span id="report-date">${currentDate}</span>`
   );
   
-  // Update the content section
+  // Update the content section (main grid area only, preserve opinion column)
   template = template.replace(
-    /<div class="content">[\s\S]*?<\/div>\s*<div class="footer">/,
-    `<div class="content">\n      ${contentHtml}\n    </div>\n\n    <div class="footer">`
+    /<div class="content">[\s\S]*?<\/div>\s*<aside class="opinion-column">/,
+    `<div class="content">\n${contentHtml}\n    </div>\n    \n    <aside class="opinion-column">`
   );
   
   return template;
@@ -608,23 +637,20 @@ async function main() {
     // Save results to JSON
     fs.writeFileSync('eve-results.json', JSON.stringify(results, null, 2));
     
-    // Generate and save email report
-    const emailHtml = generateEmailReport(results);
-    fs.writeFileSync('email-report.html', emailHtml);
+    // Generate and update the index.html file
+    const reportHtml = generateEmailReport(results);
+    fs.writeFileSync('docs/eve/index.html', reportHtml);
     
     console.log('\n✅ Analysis Complete!');
     console.log(`Total time: ${results.metadata.analysisTime}`);
     console.log(`Items analyzed: ${results.metadata.itemsAnalyzed}`);
     console.log('Results saved to eve-results.json');
-    console.log('Email report saved to email-report.html');
+    console.log('Updated docs/eve/index.html');
     
-    // Log top 3 for GitHub Actions summary
-    if (results.recommendations && results.recommendations.length > 0) {
-      console.log('\n🏆 TOP 3 RECOMMENDATIONS:');
-      results.recommendations.slice(0, 3).forEach((item, index) => {
-        console.log(`${index + 1}. ${item.name} - Score: ${item.investmentScore}/100`);
-      });
-    }
+    // Log summary for GitHub Actions
+    console.log('\n📊 RESULTS SUMMARY:');
+    console.log(`High Risk: ${results.highRisk?.length || 0} items`);
+    console.log(`Low Risk: ${results.lowRisk?.length || 0} items`);
     
   } catch (error) {
     console.error('❌ Analysis failed:', error.message);
@@ -641,9 +667,9 @@ async function main() {
     
     fs.writeFileSync('eve-results.json', JSON.stringify(errorResult, null, 2));
     
-    // Generate error email report
-    const emailHtml = generateEmailReport(errorResult);
-    fs.writeFileSync('email-report.html', emailHtml);
+    // Generate error report and update index.html
+    const reportHtml = generateEmailReport(errorResult);
+    fs.writeFileSync('docs/eve/index.html', reportHtml);
     
     process.exit(1);
   }
