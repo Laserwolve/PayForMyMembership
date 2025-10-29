@@ -1,6 +1,12 @@
-import * as readline from 'readline';
 import fs from 'fs';
 import { createRequire } from 'module';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import * as brevo from '@getbrevo/brevo';
+
+// Get directory name for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load package.json for app name and version
 const require = createRequire(import.meta.url);
@@ -45,14 +51,27 @@ async function fetchPriceHistory(itemId) {
       }
     });
     
-    console.log(`  API Response for item ${itemId}: Status=${response.status}, OK=${response.ok}, Headers:`, Object.fromEntries(response.headers.entries()));
-    
     if (!response.ok) {
+      console.error(`  API Response for item ${itemId}: Status=${response.status}, OK=${response.ok}`);
       throw new Error(`Failed to fetch item ${itemId}: ${response.status}`);
     }
     
+    // Check if response is actually JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error(`  ⚠️ Rate limit detected for item ${itemId}: Received ${contentType} instead of JSON (likely soft ban)`);
+      console.error(`  Headers:`, Object.fromEntries(response.headers.entries()));
+      return null;
+    }
+    
     const text = await response.text();
-    console.log(`  Response body length: ${text.length} chars, First 100 chars: ${text.substring(0, 100)}`);
+    
+    // Check if response body is empty
+    if (text.length === 0) {
+      console.error(`  ⚠️ Empty response for item ${itemId} (likely rate limited)`);
+      console.error(`  Headers:`, Object.fromEntries(response.headers.entries()));
+      return null;
+    }
     
     const data = JSON.parse(text);
     return data;
@@ -262,147 +281,10 @@ function analyzeItem(priceData, itemInfo) {
   };
 }
 
-// ===== UTILITY FUNCTIONS =====
-
-/**
- * Prompts user for input from command line
- * @param {string} question - Question to ask the user
- * @returns {Promise<string>} User's response
- */
-function promptUser(question) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-  
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      rl.close();
-      resolve(answer);
-    });
-  });
-}
-
-/**
- * Parses gold amount from string (supports k, m, b suffixes)
- * @param {string} input - Input string like "2.5m", "500k", "1b"
- * @returns {number} Parsed gold amount
- */
-function parseGoldAmount(input) {
-  const cleaned = input.toLowerCase().trim().replace(/,/g, '');
-  
-  // Check for suffixes
-  if (cleaned.endsWith('k')) {
-    return parseFloat(cleaned) * 1000;
-  } else if (cleaned.endsWith('m')) {
-    return parseFloat(cleaned) * 1000000;
-  } else if (cleaned.endsWith('b')) {
-    return parseFloat(cleaned) * 1000000000;
-  }
-  
-  // No suffix, parse as regular number
-  return parseFloat(cleaned);
-}
-
 // ===== MAIN APPLICATION =====
 
 /**
- * Main application entry point
- */
-export async function runOSRS() {
-  console.log('🎮 OSRS Investment Analyzer');
-  console.log('=====================================');
-  console.log('Strategy: High-volatility, high-ROI opportunities\n');
-  
-  // Fetch item database
-  const itemsData = await fetchItemDatabase();
-  
-  // Ask if user wants to include member items
-  const includeMembersInput = await promptUser('Include member items? (y/n): ');
-  const includeMembers = includeMembersInput.toLowerCase().trim() === 'y';
-  
-  // Filter items based on member preference
-  const allItems = Object.entries(itemsData)
-    .filter(([id, item]) => {
-      // Skip items without required data
-      if (!item.name || item.price === undefined || item.volume === undefined) {
-        return false;
-      }
-      
-      // Filter by membership status
-      if (!includeMembers && item.members !== false) {
-        return false;
-      }
-      
-      return true;
-    })
-    .map(([id, item]) => ({
-      id: parseInt(id),
-      name: item.name,
-      volume: item.volume
-    }));
-  
-  // Ask how many items to analyze
-  const itemCountInput = await promptUser(`How many items to analyze? (max ${allItems.length}): `);
-  const itemCount = Math.min(parseInt(itemCountInput), allItems.length);
-  
-  if (isNaN(itemCount) || itemCount <= 0) {
-    console.error('Invalid number of items. Please enter a positive number.');
-    process.exit(1);
-  }
-  
-  // Randomly select items to analyze
-  const itemsToAnalyze = allItems
-    .sort(() => Math.random() - 0.5)
-    .slice(0, itemCount);
-  
-  console.log(`\nItems to analyze: ${itemsToAnalyze.length} (${includeMembers ? 'F2P + Members' : 'F2P only'})`);
-  console.log(`Analyzing items...\n`);
-  
-  const results = [];
-  
-  // Fetch and analyze each item with proper rate limiting
-  for (let i = 0; i < itemsToAnalyze.length; i++) {
-    const item = itemsToAnalyze[i];
-    process.stdout.write(`\x1b[2K\rFetching ${item.name} (${i + 1}/${itemsToAnalyze.length})...`);
-    
-    const priceData = await fetchPriceHistory(item.id);
-    
-    if (priceData) {
-      const analysis = analyzeItem(priceData, item);
-      if (analysis) {
-        results.push(analysis);
-      }
-    }
-    
-    // Rate limit: 2000ms delay between requests to avoid rate limiting
-    await delay(2000);
-  }
-  
-  console.log('\n\n✅ Analysis Complete!\n');
-  
-  // Sort by investment score (highest first)
-  results.sort((a, b) => parseFloat(b.investmentScore) - parseFloat(a.investmentScore));
-  
-  // Display top 3 recommendations
-  console.log('📊 TOP 3 INVESTMENT RECOMMENDATIONS');
-  console.log('=====================================\n');
-  
-  results.slice(0, 3).forEach((item, index) => {
-    console.log(`${index + 1}. ${item.name}`);
-    console.log(`   Investment Score: ${item.investmentScore}/100`);
-    console.log(`   Current Price: ${item.currentPrice.toLocaleString()} gp`);
-    console.log(`   Price Change: ${item.priceChange > 0 ? '+' : ''}${item.priceChange}%`);
-    console.log(`   Momentum: ${item.momentum > 0 ? '+' : ''}${item.momentum}%`);
-    console.log(`   Volatility: ${item.volatility}% ${parseFloat(item.volatility) > 20 ? '🔥' : ''}`);
-    console.log('');
-  });
-  
-  console.log('\n');
-}
-
-/**
- * Automated OSRS analysis for GitHub Actions
+ * Automated OSRS analysis
  * @param {Object} options - Configuration options
  * @returns {Promise<Object>} Analysis results
  */
@@ -479,8 +361,8 @@ export async function runOSRSAutomated(options = {}) {
       }
     }
     
-    // Rate limiting: 2000ms delay between requests
-    await delay(2000);
+    // Rate limiting: 5000ms delay between requests
+    await delay(5000);
   }
 
   logMessage('');
@@ -621,6 +503,99 @@ ${generateItemsHtml(lowRiskF2P, 'low-risk-f2p')}
   return template;
 }
 
+// ===== NEWSLETTER FUNCTIONS =====
+
+/**
+ * Loads OSRS subscriber list from Brevo contact list
+ * @returns {Promise<Array>} Array of subscriber email addresses
+ */
+async function loadSubscribers() {
+  const apiKey = process.env.BREVO_API_KEY;
+  const listId = 4; // OSRS Newsletter list
+  
+  if (!apiKey) {
+    console.log('⚠️ BREVO_API_KEY not set.');
+    return [];
+  }
+  
+  try {
+    const apiInstance = new brevo.ContactsApi();
+    apiInstance.setApiKey(brevo.ContactsApiApiKeys.apiKey, apiKey);
+    
+    // Get contacts from the list
+    const opts = {
+      limit: 500, // Max subscribers per request
+      offset: 0
+    };
+    
+    const response = await apiInstance.getContactsFromList(parseInt(listId), opts);
+    const emails = response.contacts.map(contact => contact.email);
+    
+    console.log(`📋 Loaded ${emails.length} OSRS subscribers from Brevo list ${listId}`);
+    return emails;
+  } catch (error) {
+    console.error('❌ Failed to load subscribers from Brevo:', error.message);
+    return [];
+  }
+}
+
+/**
+ * Sends newsletter via Brevo
+ * @param {Array} subscribers - Array of subscriber emails
+ */
+async function sendNewsletter(subscribers) {
+  const apiKey = process.env.BREVO_API_KEY;
+  
+  if (!apiKey) {
+    console.log('⚠️ BREVO_API_KEY not set. Skipping newsletter.');
+    return;
+  }
+  
+  if (subscribers.length === 0) {
+    console.log('📭 No OSRS subscribers found. Skipping newsletter.');
+    return;
+  }
+  
+  try {
+    // Configure Brevo API
+    const apiInstance = new brevo.TransactionalEmailsApi();
+    apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, apiKey);
+    
+    // Read the HTML report
+    const htmlContent = fs.readFileSync('docs/osrs/index.html', 'utf8');
+    
+    const currentDate = new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    const subject = `Old School RuneScape Market Analysis - ${currentDate}`;
+    
+    // Prepare email
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
+    sendSmtpEmail.subject = subject;
+    sendSmtpEmail.htmlContent = htmlContent;
+    sendSmtpEmail.sender = {
+      name: 'Mythic Market Mogul',
+      email: 'reports@vineyardtechnologies.org'
+    };
+    sendSmtpEmail.to = subscribers.map(email => ({ email }));
+    sendSmtpEmail.replyTo = {
+      email: 'reports@vineyardtechnologies.org',
+      name: 'Mythic Market Mogul'
+    };
+    
+    console.log(`\n📧 Sending OSRS newsletter to ${subscribers.length} subscriber(s)...`);
+    const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log(`✅ Newsletter sent successfully! Message ID: ${response.messageId}`);
+  } catch (error) {
+    console.error(`❌ Failed to send newsletter:`, error.message);
+    // Don't throw - newsletter failure shouldn't break the analysis
+  }
+}
+
 // ===== GITHUB ACTIONS RUNNER =====
 
 /**
@@ -672,6 +647,12 @@ async function main() {
     console.log(`Low Risk Members: ${results.lowRiskMembers?.length || 0} items`);
     console.log(`High Risk F2P: ${results.highRiskF2P?.length || 0} items`);
     console.log(`Low Risk F2P: ${results.lowRiskF2P?.length || 0} items`);
+    
+    // Send newsletter if in GitHub Actions
+    if (IS_GITHUB_ACTIONS) {
+      const subscribers = await loadSubscribers();
+      await sendNewsletter(subscribers);
+    }
     
   } catch (error) {
     console.error('❌ OSRS Analysis failed:', error.message);

@@ -27,6 +27,7 @@ jobs:
     - name: Run OSRS Analysis
       env:
         GITHUB_ACTIONS: 'true'
+        BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
       run: node src/osrs.js
       
     - name: Prepare reports directory

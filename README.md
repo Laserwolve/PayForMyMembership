@@ -9,11 +9,6 @@ A Node.js application that analyzes in-game market data to find profitable premi
 
 Updated daily with fresh market analysis and investment recommendations.
 
-## Supported Games
-
-- **Old School RuneScape**: Analyze item prices to maximize ROI before buying Bonds
-- **EVE Online**: Analyze Jita market data to find high-volatility investment opportunities
-
 ## Features
 
 ### OSRS Analyzer
@@ -46,41 +41,6 @@ Updated daily with fresh market analysis and investment recommendations.
   - Recent momentum (30-day vs 60-day comparison)
   - Investment score (0-100) optimized for EVE markets
 - Displays top 3 high-volatility investment opportunities
-
-## Installation
-
-```bash
-npm install
-```
-
-## Usage
-
-Run the analyzer:
-
-```bash
-npm start
-```
-
-Then select a game:
-- Enter `1` or `osrs` for Old School RuneScape
-- Enter `2` or `eve` for EVE Online
-
-### OSRS Workflow
-
-1. Select game (OSRS)
-2. Choose whether to include member items (y/n)
-3. Enter your investment budget (e.g., "2.5m", "500k", "10b")
-4. Enter how many items to analyze (random sampling)
-5. Wait for analysis (1 request per second to respect API limits)
-6. View top 3 investment recommendations
-
-### EVE Online Workflow
-
-1. Select game (EVE Online)
-2. Enter your ISK budget (e.g., "2.5b", "500m", "1000k")
-3. Enter how many items to analyze (random sampling from all Jita items)
-4. Wait for analysis (1 request per second to respect ESI API limits)
-5. View top 3 investment recommendations with detailed metrics
 
 ## How It Works
 
@@ -180,39 +140,19 @@ Both analyzers display top 3 recommendations with:
 This repository runs **automated daily market analysis** via GitHub Actions:
 
 ### Features
-- **Daily Schedule**: Runs automatically at 2:00 AM UTC every day
+- **Daily Schedule**: Runs automatically at 2:00 AM UTC (OSRS) and 3:00 AM UTC (EVE)
 - **Dual Analysis**: Both OSRS and EVE Online markets analyzed simultaneously
-- **Email Reports**: Beautiful HTML email reports sent automatically
+- **Email Newsletters**: Automatic daily newsletters sent via Brevo to subscribers
 - **Manual Triggers**: Can run on-demand with custom parameters
 - **Progress Tracking**: Detailed logging and analysis progress
 - **Result Storage**: JSON results and logs stored as artifacts
 
-### Email Reports Include
-- **Top 3 recommendations** for each game
+### Email Newsletters Include
+- **Top recommendations** for each game (4 categories for OSRS, 2 for EVE)
 - **Investment scores** and detailed metrics
-- **Analysis metadata** (items analyzed, time taken, budget used)
-- **Professional formatting** with color-coded sections
+- **Professional HTML formatting** matching the live reports
+- **Clickable item links** to official databases
 - **Risk warnings** and strategy information
-
-### Manual Execution
-To trigger analysis manually:
-1. Go to repository "Actions" tab
-2. Select "Daily Market Analysis" 
-3. Click "Run workflow"
-4. Customize budgets and item limits if desired
-
-### Email Setup
-To receive email reports, add these secrets to your repository:
-- `EMAIL_USERNAME`: Your Gmail address
-- `EMAIL_PASSWORD`: Gmail app password (not your regular password)
-
-## Interactive Mode (Local Use)
-
-For local interactive analysis, the original functionality remains:
-
-```bash
-npm start
-```
 
 ## Contributing
 

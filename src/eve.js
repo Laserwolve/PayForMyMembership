@@ -3,12 +3,12 @@
  * Analyzes EVE Online market data in Jita to find profitable investment opportunities
  */
 
-import * as readline from 'readline';
 import fs from 'fs';
 import { createRequire } from 'module';
 import yaml from 'js-yaml';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import * as brevo from '@getbrevo/brevo';
 
 // Get directory name for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -299,145 +299,10 @@ function analyzeItem(history, itemInfo) {
   };
 }
 
-// ===== UTILITY FUNCTIONS =====
-
-/**
- * Prompts user for input from command line
- * @param {string} question - Question to ask the user
- * @returns {Promise<string>} User's response
- */
-function promptUser(question) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-  
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      rl.close();
-      resolve(answer);
-    });
-  });
-}
-
-/**
- * Parses ISK amount from string (supports k, m, b suffixes)
- * @param {string} input - Input string like "2.5b", "500m", "1000k"
- * @returns {number} Parsed ISK amount
- */
-function parseISKAmount(input) {
-  const cleaned = input.toLowerCase().trim().replace(/,/g, '');
-  
-  // Check for suffixes
-  if (cleaned.endsWith('k')) {
-    return parseFloat(cleaned) * 1000;
-  } else if (cleaned.endsWith('m')) {
-    return parseFloat(cleaned) * 1000000;
-  } else if (cleaned.endsWith('b')) {
-    return parseFloat(cleaned) * 1000000000;
-  }
-  
-  // No suffix, parse as regular number
-  return parseFloat(cleaned);
-}
-
 // ===== MAIN APPLICATION =====
 
 /**
- * Main application entry point for EVE Online analyzer
- */
-export async function runEVE(maxItems = null, options = {}) {
-  const { isGitHubActions = false, logFile = null } = options;
-  
-  console.log('🚀 EVE Online Investment Analyzer (Jita)');
-  console.log('=====================================');
-  console.log('Strategy: High-volatility, high-ROI opportunities\n');
-  
-  // Items are already loaded from SDE at module level
-  console.log(`✅ Using ${TRADEABLE_ITEMS.length} tradeable items for analysis\n`);
-  
-  // Ask how many items to analyze (from parameter or prompt)
-  let itemCount;
-  if (maxItems) {
-    itemCount = Math.min(maxItems, TRADEABLE_ITEMS.length);
-  } else {
-    const itemCountInput = await promptUser(`How many items to analyze? (max ${TRADEABLE_ITEMS.length}): `);
-    itemCount = Math.min(parseInt(itemCountInput), TRADEABLE_ITEMS.length);
-  }
-  
-  if (isNaN(itemCount) || itemCount <= 0) {
-    if (isGitHubActions) {
-      throw new Error('Invalid number of items');
-    } else {
-      console.error('Invalid number of items. Please enter a positive number.');
-      process.exit(1);
-    }
-  }
-  
-  // Randomly select items to analyze
-  const shuffledItems = [...TRADEABLE_ITEMS].sort(() => Math.random() - 0.5);
-  
-  const logMessage = (message) => {
-    console.log(message);
-    if (logFile) {
-      const timestamp = new Date().toISOString();
-      require('fs').appendFileSync(logFile, `${timestamp}: ${message}\n`);
-    }
-  };
-
-  logMessage(`\nMarket: Jita (The Forge)`);
-  logMessage(`Target items: ${itemCount}`);
-  logMessage(`Mode: ${isGitHubActions ? 'GitHub Actions' : 'Interactive'}`);
-  logMessage(`Analyzing items...\n`);
-  
-  const results = [];
-  let itemsChecked = 0;
-  
-  // Keep analyzing until we have enough valid items or run out of items
-  for (let i = 0; i < shuffledItems.length && results.length < itemCount; i++) {
-    const item = shuffledItems[i];
-    itemsChecked++;
-    process.stdout.write(`\x1b[2K\rChecking ${item.name} (${itemsChecked} checked, ${results.length}/${itemCount} found)...`);
-    
-    const history = await fetchMarketHistory(JITA_REGION_ID, item.id);
-    
-    if (history && history.length > 0) {
-      const analysis = analyzeItem(history, item);
-      
-      if (analysis) {
-        results.push(analysis);
-      }
-    }
-    
-    // Rate limit: 1000ms delay between requests
-    await delay(1000);
-  }
-  
-  console.log('\n\n✅ Analysis Complete!\n');
-  
-  // Sort by investment score (highest first)
-  results.sort((a, b) => parseFloat(b.investmentScore) - parseFloat(a.investmentScore));
-  
-  // Display top 3 recommendations
-  console.log('� TOP 3 INVESTMENT RECOMMENDATIONS');
-  console.log('=====================================\n');
-  
-  results.slice(0, 3).forEach((item, index) => {
-    console.log(`${index + 1}. ${item.name}`);
-    console.log(`   Investment Score: ${item.investmentScore}/100`);
-    console.log(`   Current Price: ${item.currentPrice.toLocaleString()} ISK`);
-    console.log(`   Price Change: ${item.priceChange > 0 ? '+' : ''}${item.priceChange}%`);
-    console.log(`   Momentum: ${item.momentum > 0 ? '+' : ''}${item.momentum}%`);
-    console.log(`   Volatility: ${item.volatility}% ${parseFloat(item.volatility) > 10 ? '🔥' : ''}`);
-    console.log(`   Daily Volume: ${item.volume.toLocaleString()}`);
-    console.log('');
-  });
-  
-  console.log('\n');
-}
-
-/**
- * Automated EVE analysis for GitHub Actions
+ * Automated EVE analysis
  * @param {Object} options - Configuration options
  * @returns {Promise<Object>} Analysis results
  */
@@ -602,6 +467,99 @@ ${generateItemsHtml(lowRisk, 'low-risk')}
   return template;
 }
 
+// ===== NEWSLETTER FUNCTIONS =====
+
+/**
+ * Loads EVE subscriber list from Brevo contact list
+ * @returns {Promise<Array>} Array of subscriber email addresses
+ */
+async function loadSubscribers() {
+  const apiKey = process.env.BREVO_API_KEY;
+  const listId = 3; // EVE Online Newsletter list
+  
+  if (!apiKey) {
+    console.log('⚠️ BREVO_API_KEY not set.');
+    return [];
+  }
+  
+  try {
+    const apiInstance = new brevo.ContactsApi();
+    apiInstance.setApiKey(brevo.ContactsApiApiKeys.apiKey, apiKey);
+    
+    // Get contacts from the list
+    const opts = {
+      limit: 500, // Max subscribers per request
+      offset: 0
+    };
+    
+    const response = await apiInstance.getContactsFromList(parseInt(listId), opts);
+    const emails = response.contacts.map(contact => contact.email);
+    
+    console.log(`📋 Loaded ${emails.length} EVE subscribers from Brevo list ${listId}`);
+    return emails;
+  } catch (error) {
+    console.error('❌ Failed to load subscribers from Brevo:', error.message);
+    return [];
+  }
+}
+
+/**
+ * Sends newsletter via Brevo
+ * @param {Array} subscribers - Array of subscriber emails
+ */
+async function sendNewsletter(subscribers) {
+  const apiKey = process.env.BREVO_API_KEY;
+  
+  if (!apiKey) {
+    console.log('⚠️ BREVO_API_KEY not set. Skipping newsletter.');
+    return;
+  }
+  
+  if (subscribers.length === 0) {
+    console.log('📭 No EVE subscribers found. Skipping newsletter.');
+    return;
+  }
+  
+  try {
+    // Configure Brevo API
+    const apiInstance = new brevo.TransactionalEmailsApi();
+    apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, apiKey);
+    
+    // Read the HTML report
+    const htmlContent = fs.readFileSync('docs/eve/index.html', 'utf8');
+    
+    const currentDate = new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    const subject = `EVE Online Market Analysis - ${currentDate}`;
+    
+    // Prepare email
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
+    sendSmtpEmail.subject = subject;
+    sendSmtpEmail.htmlContent = htmlContent;
+    sendSmtpEmail.sender = {
+      name: 'Mythic Market Mogul',
+      email: 'reports@vineyardtechnologies.org'
+    };
+    sendSmtpEmail.to = subscribers.map(email => ({ email }));
+    sendSmtpEmail.replyTo = {
+      email: 'reports@vineyardtechnologies.org',
+      name: 'Mythic Market Mogul'
+    };
+    
+    console.log(`\n📧 Sending EVE newsletter to ${subscribers.length} subscriber(s)...`);
+    const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log(`✅ Newsletter sent successfully! Message ID: ${response.messageId}`);
+  } catch (error) {
+    console.error(`❌ Failed to send newsletter:`, error.message);
+    // Don't throw - newsletter failure shouldn't break the analysis
+  }
+}
+
 // ===== GITHUB ACTIONS RUNNER =====
 
 /**
@@ -652,6 +610,12 @@ async function main() {
     console.log('\n📊 RESULTS SUMMARY:');
     console.log(`High Risk: ${results.highRisk?.length || 0} items`);
     console.log(`Low Risk: ${results.lowRisk?.length || 0} items`);
+    
+    // Send newsletter if in GitHub Actions
+    if (IS_GITHUB_ACTIONS) {
+      const subscribers = await loadSubscribers();
+      await sendNewsletter(subscribers);
+    }
     
   } catch (error) {
     console.error('❌ Analysis failed:', error.message);

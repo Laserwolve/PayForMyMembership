@@ -102,12 +102,13 @@
         }
         .opinion-section img {
             max-width: 100px;
-            height: auto;
+            height: 100%;
             flex-shrink: 0;
             object-fit: cover;
             object-position: 75% center;
             border: 2px solid #000000;
             display: block;
+            align-self: stretch;
         }
         .opinion-section .opinion-text {
             flex: 1;
@@ -257,8 +258,37 @@
             }
         }
         @media (max-width: 768px) {
+            .report-container {
+                padding: 20px 50px;
+            }
+            .header {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+            .header h2 {
+                order: 3;
+                flex-basis: 100%;
+            }
+            .header img {
+                display: block;
+                max-height: 50px;
+            }
             .grid-items {
                 grid-template-columns: 1fr;
+            }
+            .opinion-section {
+                flex-direction: column;
+            }
+            .opinion-section img {
+                max-width: 200px;
+                height: auto;
+                align-self: center;
+            }
+        }
+        @media (max-width: 480px) {
+            .header img {
+                max-height: 40px;
             }
         }
     </style>
@@ -389,14 +419,13 @@
     <aside class="opinion-column">
       <h3>
         <span><a href="https://evewho.com/character/2112535035" target="_blank" style="color: #ffffff; text-decoration: none;">Foggle Lopperbottom</a> says:</span>
-        <span id="report-date">Tuesday, October 29, 2025</span>
       </h3>
       
       <div class="opinion-section">
         <a href="https://evewho.com/character/2112535035" target="_blank"><img src="images/portrait.jpg" alt="Analyst"></a>
         <div class="opinion-text">
           <p>
-            Minerals continue to dominate the low-risk segment, reflecting their essential role in shipbuilding and industry. Their stable demand ensures consistent returns for risk-averse traders. They are a great way to combat inflation if you don't play much.
+            <em>Tuesday, October 29, 2025</em> — Minerals continue to dominate the low-risk segment, reflecting their essential role in shipbuilding and industry. Their stable demand ensures consistent returns for risk-averse traders. They are a great way to combat inflation if you don't play much.
           </p>
           <p>In our high risk investment item recommendations, a faction shield booster has been spotted. Grab a couple <a href="https://evemarketbrowser.com/region/0/type/19191" target="_blank" style="color: #0a84ff; text-decoration: none; font-weight: bold;">Pithum A-Type Medium Shield Boosters</a> while you can. You won't flip them quick, but they should resell for a decent profit.</p>
         </div>
