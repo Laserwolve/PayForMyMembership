@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EVE Online Market Analysis Report</title>
+    <link rel="icon" type="image/png" href="images/MythicMarketMogulIcon.png">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -103,8 +104,10 @@
             max-width: 100px;
             height: auto;
             flex-shrink: 0;
-            object-fit: contain;
+            object-fit: cover;
+            object-position: 75% center;
             border: 2px solid #000000;
+            display: block;
         }
         .opinion-section .opinion-text {
             flex: 1;
@@ -138,8 +141,8 @@
             color: #e0e0e0;
         }
         .grid-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 20px;
             margin-top: 20px;
         }
@@ -158,8 +161,8 @@
             border-bottom: 2px solid #2a3f5f;
         }
         .grid-items {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
         }
         .grid-item {
@@ -171,6 +174,11 @@
             gap: 12px;
             align-items: flex-start;
         }
+        .grid-item img {
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+        }
         .grid-item-content {
             flex: 1;
         }
@@ -178,6 +186,13 @@
             margin: 0 0 8px 0;
             color: #fff;
             font-size: 1em;
+        }
+        .grid-item h4 a {
+            color: #fff;
+            text-decoration: none;
+        }
+        .grid-item h4 a:hover {
+            color: #0a84ff;
         }
         .item-metrics {
             display: flex;
@@ -242,7 +257,7 @@
             }
         }
         @media (max-width: 768px) {
-            .grid-container {
+            .grid-items {
                 grid-template-columns: 1fr;
             }
         }
@@ -265,8 +280,9 @@
           <h3>High Risk</h3>
           <div class="grid-items">
             <div class="grid-item">
+              <img src="https://images.evetech.net/types/3082/icon" alt="Mid-grade Crystal Epsilon">
               <div class="grid-item-content">
-                <h4>Mid-grade Crystal Epsilon</h4>
+                <h4><a href="https://evemarketbrowser.com/region/0/type/3082" target="_blank">Mid-grade Crystal Epsilon</a></h4>
                 <div class="item-metrics">
                   <span>Price: 137.0M ISK</span>
                   <span>Volume: Very Low</span>
@@ -276,8 +292,9 @@
               </div>
             </div>
             <div class="grid-item">
+              <img src="https://images.evetech.net/types/17636/icon" alt="Imperial Navy General Insignia II">
               <div class="grid-item-content">
-                <h4>Imperial Navy General Insignia II</h4>
+                <h4><a href="https://evemarketbrowser.com/region/0/type/17636" target="_blank">Imperial Navy General Insignia II</a></h4>
                 <div class="item-metrics">
                   <span>Price: 1.5M ISK</span>
                   <span>Volume: High</span>
@@ -287,8 +304,9 @@
               </div>
             </div>
             <div class="grid-item">
+              <img src="https://images.evetech.net/types/14128/icon" alt="Republic Fleet Gyrostabilizer">
               <div class="grid-item-content">
-                <h4>Republic Fleet Gyrostabilizer</h4>
+                <h4><a href="https://evemarketbrowser.com/region/0/type/14128" target="_blank">Republic Fleet Gyrostabilizer</a></h4>
                 <div class="item-metrics">
                   <span>Price: 45.2M ISK</span>
                   <span>Volume: Medium</span>
@@ -298,24 +316,14 @@
               </div>
             </div>
             <div class="grid-item">
+              <img src="https://images.evetech.net/types/19191/icon" alt="Pithum A-Type Medium Shield Booster">
               <div class="grid-item-content">
-                <h4>Pithum A-Type Medium Shield Booster</h4>
+                <h4><a href="https://evemarketbrowser.com/region/0/type/19191" target="_blank">Pithum A-Type Medium Shield Booster</a></h4>
                 <div class="item-metrics">
                   <span>Price: 892.0M ISK</span>
                   <span>Volume: Very Low</span>
                   <span>Volatility: 21.4%</span>
                   <span>Momentum: +7.2%</span>
-                </div>
-              </div>
-            </div>
-            <div class="grid-item">
-              <div class="grid-item-content">
-                <h4>Caldari Navy Antimatter Charge L</h4>
-                <div class="item-metrics">
-                  <span>Price: 3.8K ISK</span>
-                  <span>Volume: Very High</span>
-                  <span>Volatility: 16.8%</span>
-                  <span>Momentum: +6.5%</span>
                 </div>
               </div>
             </div>
@@ -326,8 +334,9 @@
           <h3>Low Risk</h3>
           <div class="grid-items">
             <div class="grid-item">
+              <img src="https://images.evetech.net/types/34/icon" alt="Tritanium">
               <div class="grid-item-content">
-                <h4>Tritanium</h4>
+                <h4><a href="https://evemarketbrowser.com/region/0/type/34" target="_blank">Tritanium</a></h4>
                 <div class="item-metrics">
                   <span>Price: 7 ISK</span>
                   <span>Volume: Very High</span>
@@ -337,8 +346,9 @@
               </div>
             </div>
             <div class="grid-item">
+              <img src="https://images.evetech.net/types/35/icon" alt="Pyerite">
               <div class="grid-item-content">
-                <h4>Pyerite</h4>
+                <h4><a href="https://evemarketbrowser.com/region/0/type/35" target="_blank">Pyerite</a></h4>
                 <div class="item-metrics">
                   <span>Price: 12 ISK</span>
                   <span>Volume: Very High</span>
@@ -348,8 +358,9 @@
               </div>
             </div>
             <div class="grid-item">
+              <img src="https://images.evetech.net/types/36/icon" alt="Mexallon">
               <div class="grid-item-content">
-                <h4>Mexallon</h4>
+                <h4><a href="https://evemarketbrowser.com/region/0/type/36" target="_blank">Mexallon</a></h4>
                 <div class="item-metrics">
                   <span>Price: 89 ISK</span>
                   <span>Volume: Very High</span>
@@ -359,24 +370,14 @@
               </div>
             </div>
             <div class="grid-item">
+              <img src="https://images.evetech.net/types/37/icon" alt="Isogen">
               <div class="grid-item-content">
-                <h4>Isogen</h4>
+                <h4><a href="https://evemarketbrowser.com/region/0/type/37" target="_blank">Isogen</a></h4>
                 <div class="item-metrics">
                   <span>Price: 124 ISK</span>
                   <span>Volume: High</span>
                   <span>Volatility: 6.1%</span>
                   <span>Momentum: +3.9%</span>
-                </div>
-              </div>
-            </div>
-            <div class="grid-item">
-              <div class="grid-item-content">
-                <h4>Nocxium</h4>
-                <div class="item-metrics">
-                  <span>Price: 1.2K ISK</span>
-                  <span>Volume: High</span>
-                  <span>Volatility: 7.8%</span>
-                  <span>Momentum: +4.2%</span>
                 </div>
               </div>
             </div>
@@ -394,8 +395,10 @@
       <div class="opinion-section">
         <img src="images/portrait.jpg" alt="Analyst">
         <div class="opinion-text">
-          <p>This week's high-risk selections show strong volatility patterns typical of New Eden's most dynamic markets. High-volatility items present significant opportunities for experienced traders willing to navigate rapid price swings.</p>
-          <p>Low-risk recommendations focus on stable, high-volume commodities that maintain consistent pricing despite market fluctuations. These items are ideal for conservative investment strategies and long-term portfolio stability.</p>
+          <p>
+            Minerals continue to dominate the low-risk segment, reflecting their essential role in shipbuilding and industry. Their stable demand ensures consistent returns for risk-averse traders. They are a great way to combat inflation if you don't play much.
+          </p>
+          <p>In our high risk investment item recommendations, a faction shield booster has been spotted. Grab a couple <a href="https://evemarketbrowser.com/region/0/type/19191" target="_blank" style="color: #0a84ff; text-decoration: none; font-weight: bold;">Pithum A-Type Medium Shield Boosters</a> while you can. You won't flip them quick, but they should resell for a decent profit.</p>
         </div>
       </div>
     </aside>

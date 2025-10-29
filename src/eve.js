@@ -550,8 +550,9 @@ function generateEmailReport(eveData) {
       }
       return items.map((item) => `
             <div class="grid-item">
+              <img src="https://images.evetech.net/types/${item.id}/icon" alt="${item.name}">
               <div class="grid-item-content">
-                <h4>${item.name}</h4>
+                <h4><a href="https://evemarketbrowser.com/region/0/type/${item.id}" target="_blank">${item.name}</a></h4>
                 <div class="item-metrics">
                   <span>Price: ${formatISK(item.currentPrice)}</span>
                   <span>Volume: ${item.volumeCategory}</span>
