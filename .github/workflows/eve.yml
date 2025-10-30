@@ -35,11 +35,8 @@ jobs:
         mkdir -p docs/eve/archive
         REPORT_DATE=$(date +%Y-%m-%d)
         
-        # Update main page with latest report
-        cp email-report.html docs/eve/index.html
-        
-        # Archive dated report
-        cp email-report.html docs/eve/archive/${REPORT_DATE}.html
+        # Archive dated report (index.html is already updated by eve.js)
+        cp docs/eve/index.html docs/eve/archive/${REPORT_DATE}.html
         cp eve-results.json docs/eve/archive/${REPORT_DATE}.json
         
     - name: Commit and push reports

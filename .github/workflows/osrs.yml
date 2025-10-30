@@ -35,11 +35,8 @@ jobs:
         mkdir -p docs/osrs/archive
         REPORT_DATE=$(date +%Y-%m-%d)
         
-        # Update main page with latest report
-        cp email-report.html docs/osrs/index.html
-        
-        # Archive dated report
-        cp email-report.html docs/osrs/archive/${REPORT_DATE}.html
+        # Archive dated report (index.html is already updated by osrs.js)
+        cp docs/osrs/index.html docs/osrs/archive/${REPORT_DATE}.html
         cp osrs-results.json docs/osrs/archive/${REPORT_DATE}.json
         
     - name: Commit and push reports
