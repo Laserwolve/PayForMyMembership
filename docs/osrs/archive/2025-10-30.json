@@ -1,0 +1,106 @@
+{
+  "highRiskMembers": [],
+  "lowRiskMembers": [
+    {
+      "id": 42,
+      "name": "Mithril arrowtips",
+      "currentPrice": 41,
+      "startPrice": 41,
+      "priceChange": "0.00",
+      "volume": 1551162,
+      "volumeCategory": "Very High",
+      "volatility": "0.00",
+      "momentum": "0.00",
+      "investmentScore": "50.0",
+      "dataPoints": 1,
+      "members": true,
+      "riskLevel": "low"
+    },
+    {
+      "id": 141,
+      "name": "Prayer potion(2)",
+      "currentPrice": 4850,
+      "startPrice": 4850,
+      "priceChange": "0.00",
+      "volume": 30442,
+      "volumeCategory": "Medium",
+      "volatility": "0.00",
+      "momentum": "0.00",
+      "investmentScore": "50.0",
+      "dataPoints": 1,
+      "members": true,
+      "riskLevel": "low"
+    },
+    {
+      "id": 8790,
+      "name": "Bolt of cloth",
+      "currentPrice": 1076,
+      "startPrice": 1076,
+      "priceChange": "0.00",
+      "volume": 380406,
+      "volumeCategory": "High",
+      "volatility": "0.00",
+      "momentum": "0.00",
+      "investmentScore": "50.0",
+      "dataPoints": 1,
+      "members": true,
+      "riskLevel": "low"
+    }
+  ],
+  "highRiskF2P": [],
+  "lowRiskF2P": [
+    {
+      "id": 1953,
+      "name": "Pastry dough",
+      "currentPrice": 174,
+      "startPrice": 174,
+      "priceChange": "0.00",
+      "volume": 92931,
+      "volumeCategory": "Medium",
+      "volatility": "0.00",
+      "momentum": "0.00",
+      "investmentScore": "50.0",
+      "dataPoints": 1,
+      "members": false,
+      "riskLevel": "low"
+    },
+    {
+      "id": 223,
+      "name": "Red spiders' eggs",
+      "currentPrice": 190,
+      "startPrice": 190,
+      "priceChange": "0.00",
+      "volume": 2505967,
+      "volumeCategory": "Very High",
+      "volatility": "0.00",
+      "momentum": "0.00",
+      "investmentScore": "50.0",
+      "dataPoints": 1,
+      "members": false,
+      "riskLevel": "low"
+    },
+    {
+      "id": 229,
+      "name": "Vial",
+      "currentPrice": 3,
+      "startPrice": 3,
+      "priceChange": "0.00",
+      "volume": 7250736,
+      "volumeCategory": "Very High",
+      "volatility": "0.00",
+      "momentum": "0.00",
+      "investmentScore": "50.0",
+      "dataPoints": 1,
+      "members": false,
+      "riskLevel": "low"
+    }
+  ],
+  "totalAnalyzed": 1636,
+  "totalChecked": 1636,
+  "metadata": {
+    "itemsAnalyzed": 1636,
+    "analysisTime": "0m 3s",
+    "timestamp": "2025-10-30T18:41:46.019Z",
+    "environment": "GitHub Actions"
+  }
+}
