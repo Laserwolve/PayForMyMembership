@@ -33,44 +33,92 @@ const getRepoUrl = () => {
 
 const USER_AGENT = `${pkg.name}/${pkg.version} (${getGitHubEmail()}; +${getRepoUrl()})`;
 
+// Path to local history file
+const HISTORY_FILE = path.join(__dirname, '..', 'data', 'osrs-history.json');
+
+// ===== LOCAL HISTORY FUNCTIONS =====
+
+/**
+ * Loads historical data from local file
+ * @returns {Object} Historical data by item ID
+ */
+function loadHistoricalData() {
+  if (!fs.existsSync(HISTORY_FILE)) {
+    console.log('📝 Creating new history file...');
+    fs.writeFileSync(HISTORY_FILE, JSON.stringify({}, null, 2));
+    return {};
+  }
+  return JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8'));
+}
+
+/**
+ * Saves updated historical data
+ * @param {Object} data - Historical data to save
+ */
+function saveHistoricalData(data) {
+  fs.writeFileSync(HISTORY_FILE, JSON.stringify(data, null, 2));
+}
+
+/**
+ * Updates local history with today's data from Weirdgloop API
+ * @param {number} itemId - The OSRS item ID
+ * @param {string} itemName - The item name
+ * @param {number} currentPrice - Today's price from Weirdgloop
+ * @param {number} volume - Today's volume from Weirdgloop
+ * @returns {Object} Full price history for the item
+ */
+function updateLocalHistory(itemId, itemName, currentPrice, volume) {
+  const historicalData = loadHistoricalData();
+  
+  // Initialize item if it doesn't exist
+  if (!historicalData[itemId]) {
+    historicalData[itemId] = {
+      name: itemName,
+      daily: {}
+    };
+  }
+  
+  // Update item name in case it changed
+  historicalData[itemId].name = itemName;
+  
+  // Get today's timestamp (midnight UTC)
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const todayTimestamp = today.getTime();
+  
+  // Update or append today's price
+  historicalData[itemId].daily[todayTimestamp] = currentPrice;
+  
+  // Keep only last 180 days to manage file size
+  const cutoffTimestamp = todayTimestamp - (180 * 24 * 60 * 60 * 1000);
+  const recentDaily = {};
+  Object.entries(historicalData[itemId].daily).forEach(([ts, price]) => {
+    if (parseInt(ts) >= cutoffTimestamp) {
+      recentDaily[ts] = price;
+    }
+  });
+  historicalData[itemId].daily = recentDaily;
+  
+  // Save updated history
+  saveHistoricalData(historicalData);
+  
+  return { daily: historicalData[itemId].daily };
+}
+
 // ===== API FUNCTIONS =====
 
 /**
- * Fetches price history for an item from the OSRS API
+ * Gets price history for an item from local storage
+ * Updates with today's data from the item database
  * @param {number} itemId - The OSRS item ID
- * @returns {Promise<Object>} Price data with timestamps and values
+ * @param {string} itemName - The item name
+ * @param {number} currentPrice - Today's price
+ * @param {number} volume - Today's volume
+ * @returns {Object} Price data with timestamps and values
  */
-async function fetchPriceHistory(itemId) {
-  const url = `https://secure.runescape.com/m=itemdb_oldschool/api/graph/${itemId}.json`;
-  
-  try {
-    const response = await fetch(url, {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': USER_AGENT
-      }
-    });
-    
-    if (!response.ok) {
-      console.error(`  API Response for item ${itemId}: Status=${response.status}, OK=${response.ok}`);
-      throw new Error(`Failed to fetch item ${itemId}: ${response.status}`);
-    }
-    
-    const text = await response.text();
-    
-    // Check if response body is empty (actual rate limit indicator)
-    if (text.length === 0) {
-      console.error(`  ⚠️ Rate limit detected for item ${itemId}: Empty response body`);
-      console.error(`  Headers:`, Object.fromEntries(response.headers.entries()));
-      throw new Error(`Rate limited by OSRS API - received empty response`);
-    }
-    
-    const data = JSON.parse(text);
-    return data;
-  } catch (error) {
-    console.error(`Error fetching data for item ${itemId}:`, error.message);
-    return null;
-  }
+function getPriceHistory(itemId, itemName, currentPrice, volume) {
+  // Update local history with today's data
+  return updateLocalHistory(itemId, itemName, currentPrice, volume);
 }
 
 /**
@@ -99,14 +147,6 @@ async function fetchItemDatabase() {
     console.error('Error fetching item database:', error.message);
     process.exit(1);
   }
-}
-
-/**
- * Delays execution for a specified time
- * @param {number} ms - Milliseconds to wait
- */
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // ===== ANALYSIS FUNCTIONS =====
@@ -348,7 +388,12 @@ export async function runOSRSAutomated(options = {}) {
     // Progress update for every item
     logMessage(`Progress: ${itemsChecked}/${itemsToAnalyze.length} - Checking ${item.name}...`);
     
-    const priceData = await fetchPriceHistory(item.id);
+    // Get current price from the item database (already fetched)
+    const itemData = itemsData[item.id];
+    const currentPrice = itemData.price;
+    
+    // Get price history from local storage (no API call needed!)
+    const priceData = getPriceHistory(item.id, item.name, currentPrice, item.volume);
     
     if (priceData) {
       const analysis = analyzeItem(priceData, item);
@@ -360,8 +405,7 @@ export async function runOSRSAutomated(options = {}) {
       }
     }
     
-    // Rate limiting: 10000ms delay between requests
-    await delay(10000);
+    // No delay needed - we're just reading/writing local files now!
   }
 
   logMessage('');
