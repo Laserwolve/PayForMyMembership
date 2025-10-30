@@ -199,9 +199,8 @@
             color: #e0e0e0;
         }
         .grid-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            width: 100%;
+            border-spacing: 0 20px;
             margin-top: 20px;
         }
         .grid-section {
@@ -209,6 +208,7 @@
             padding: 15px;
             border-radius: 8px;
             border: 2px solid #2a3f5f;
+            vertical-align: top;
         }
         .grid-section h3 {
             margin: 0 0 15px 0;
@@ -219,26 +219,26 @@
             border-bottom: 2px solid #2a3f5f;
         }
         .grid-items {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            width: 100%;
+            border-spacing: 10px;
         }
         .grid-item {
             background: #0a0e1a;
             padding: 12px;
             border-radius: 6px;
             border-left: 4px solid #0a84ff;
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .grid-item table {
+            width: 100%;
+            border-spacing: 0;
         }
         .grid-item img {
             width: 32px;
             height: 32px;
-            flex-shrink: 0;
         }
         .grid-item-content {
-            flex: 1;
+            padding-left: 12px;
         }
         .grid-item h4 {
             margin: 0 0 8px 0;
@@ -253,9 +253,7 @@
             color: #0a84ff;
         }
         .item-metrics {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+            margin-top: 5px;
         }
         .item-metrics span {
             background: #16213e;
@@ -264,6 +262,9 @@
             font-size: 0.85em;
             color: #e0e0e0;
             border: 1px solid #2a3f5f;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            display: inline-block;
         }
         .score {
             background: #0a84ff !important;
@@ -353,133 +354,22 @@
 <body>
     <div class="report-container">
     <div class="header">
-        <a href="https://www.eveonline.com/" target="_blank"><img src="images/eveLogo.png" alt="EVE Online Logo"></a>
+        <a href="https://www.eveonline.com/" target="_blank"><img src="https://reports.vineyardtechnologies.org/eve/images/eveLogo.png" alt="EVE Online Logo"></a>
         <h2>Market Analysis Report</h2>
-        <a href="https://vineyardtechnologies.org/products/mythic-market-mogul" target="_blank"><img src="images/mythicMarketMogulLogo.png" alt="MMM Logo"></a>
+        <a href="https://vineyardtechnologies.org/products/mythic-market-mogul" target="_blank"><img src="https://reports.vineyardtechnologies.org/eve/images/mythicMarketMogulLogo.png" alt="MMM Logo"></a>
     </div>
 
     <div class="main-container">
-    <div class="content">
-      <h2 style="text-align: center; margin-top: 0;">Recommendations</h2>
-      
-      <div class="grid-container">
-        <div class="grid-section">
-          <h3>High Risk</h3>
-          <div class="grid-items">
-            <div class="grid-item">
-              <img src="https://images.evetech.net/types/3082/icon" alt="Mid-grade Crystal Epsilon">
-              <div class="grid-item-content">
-                <h4><a href="https://evemarketbrowser.com/region/0/type/3082" target="_blank">Mid-grade Crystal Epsilon</a></h4>
-                <div class="item-metrics">
-                  <span>Price: 137.0M ISK</span>
-                  <span>Volume: Very Low</span>
-                  <span>Volatility: 18.6%</span>
-                  <span>Momentum: +9.1%</span>
-                </div>
-              </div>
-            </div>
-            <div class="grid-item">
-              <img src="https://images.evetech.net/types/17636/icon" alt="Imperial Navy General Insignia II">
-              <div class="grid-item-content">
-                <h4><a href="https://evemarketbrowser.com/region/0/type/17636" target="_blank">Imperial Navy General Insignia II</a></h4>
-                <div class="item-metrics">
-                  <span>Price: 1.5M ISK</span>
-                  <span>Volume: High</span>
-                  <span>Volatility: 19.9%</span>
-                  <span>Momentum: +10.0%</span>
-                </div>
-              </div>
-            </div>
-            <div class="grid-item">
-              <img src="https://images.evetech.net/types/14128/icon" alt="Republic Fleet Gyrostabilizer">
-              <div class="grid-item-content">
-                <h4><a href="https://evemarketbrowser.com/region/0/type/14128" target="_blank">Republic Fleet Gyrostabilizer</a></h4>
-                <div class="item-metrics">
-                  <span>Price: 45.2M ISK</span>
-                  <span>Volume: Medium</span>
-                  <span>Volatility: 17.3%</span>
-                  <span>Momentum: +8.4%</span>
-                </div>
-              </div>
-            </div>
-            <div class="grid-item">
-              <img src="https://images.evetech.net/types/19191/icon" alt="Pithum A-Type Medium Shield Booster">
-              <div class="grid-item-content">
-                <h4><a href="https://evemarketbrowser.com/region/0/type/19191" target="_blank">Pithum A-Type Medium Shield Booster</a></h4>
-                <div class="item-metrics">
-                  <span>Price: 892.0M ISK</span>
-                  <span>Volume: Very Low</span>
-                  <span>Volatility: 21.4%</span>
-                  <span>Momentum: +7.2%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="grid-section">
-          <h3>Low Risk</h3>
-          <div class="grid-items">
-            <div class="grid-item">
-              <img src="https://images.evetech.net/types/34/icon" alt="Tritanium">
-              <div class="grid-item-content">
-                <h4><a href="https://evemarketbrowser.com/region/0/type/34" target="_blank">Tritanium</a></h4>
-                <div class="item-metrics">
-                  <span>Price: 7 ISK</span>
-                  <span>Volume: Very High</span>
-                  <span>Volatility: 3.2%</span>
-                  <span>Momentum: +2.1%</span>
-                </div>
-              </div>
-            </div>
-            <div class="grid-item">
-              <img src="https://images.evetech.net/types/35/icon" alt="Pyerite">
-              <div class="grid-item-content">
-                <h4><a href="https://evemarketbrowser.com/region/0/type/35" target="_blank">Pyerite</a></h4>
-                <div class="item-metrics">
-                  <span>Price: 12 ISK</span>
-                  <span>Volume: Very High</span>
-                  <span>Volatility: 4.5%</span>
-                  <span>Momentum: +2.8%</span>
-                </div>
-              </div>
-            </div>
-            <div class="grid-item">
-              <img src="https://images.evetech.net/types/36/icon" alt="Mexallon">
-              <div class="grid-item-content">
-                <h4><a href="https://evemarketbrowser.com/region/0/type/36" target="_blank">Mexallon</a></h4>
-                <div class="item-metrics">
-                  <span>Price: 89 ISK</span>
-                  <span>Volume: Very High</span>
-                  <span>Volatility: 5.7%</span>
-                  <span>Momentum: +3.4%</span>
-                </div>
-              </div>
-            </div>
-            <div class="grid-item">
-              <img src="https://images.evetech.net/types/37/icon" alt="Isogen">
-              <div class="grid-item-content">
-                <h4><a href="https://evemarketbrowser.com/region/0/type/37" target="_blank">Isogen</a></h4>
-                <div class="item-metrics">
-                  <span>Price: 124 ISK</span>
-                  <span>Volume: High</span>
-                  <span>Volatility: 6.1%</span>
-                  <span>Momentum: +3.9%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
+    <table class="main-table">
+      <tr>
+        <td>
     <aside class="opinion-column">
       <h3>
         <span><a href="https://evewho.com/character/2112535035" target="_blank" style="color: #ffffff; text-decoration: none;">Foggle Lopperbottom</a> says:</span>
       </h3>
       
       <div class="opinion-section">
-        <a href="https://evewho.com/character/2112535035" target="_blank"><img src="images/portrait.jpg" alt="Analyst"></a>
+        <a href="https://evewho.com/character/2112535035" target="_blank"><img src="https://reports.vineyardtechnologies.org/eve/images/portrait.jpg" alt="Analyst"></a>
         <div class="opinion-text">
           <p>
             <em>Tuesday, October 29, 2025</em> — Minerals continue to dominate the low-risk segment, reflecting their essential role in shipbuilding and industry. Their stable demand ensures consistent returns for risk-averse traders. They are a great way to combat inflation if you don't play much.
@@ -488,6 +378,193 @@
         </div>
       </div>
     </aside>
+        </td>
+      </tr>
+      <tr>
+        <td>
+    <div class="content">
+      <h2 style="text-align: center; margin-top: 0;">Recommendations</h2>
+      
+      <table class="grid-container">
+        <tr>
+          <td class="grid-section">
+            <h3>High Risk</h3>
+            <table class="grid-items">
+              <tr>
+                <td style="width: 50%; vertical-align: top;">
+            <div class="grid-item">
+              <table>
+                <tr>
+                  <td style="width: 32px; vertical-align: top;">
+                    <img src="https://images.evetech.net/types/3082/icon" alt="Mid-grade Crystal Epsilon">
+                  </td>
+                  <td class="grid-item-content" style="vertical-align: top;">
+                    <h4><a href="https://evemarketbrowser.com/region/0/type/3082" target="_blank">Mid-grade Crystal Epsilon</a></h4>
+                    <div class="item-metrics">
+                      <span>Price: 137.0M ISK</span>
+                      <span>Volume: Very Low</span>
+                      <span>Volatility: 18.6%</span>
+                      <span>Momentum: +9.1%</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+            <div class="grid-item">
+              <table>
+                <tr>
+                  <td style="width: 32px; vertical-align: top;">
+                    <img src="https://images.evetech.net/types/17636/icon" alt="Imperial Navy General Insignia II">
+                  </td>
+                  <td class="grid-item-content" style="vertical-align: top;">
+                    <h4><a href="https://evemarketbrowser.com/region/0/type/17636" target="_blank">Imperial Navy General Insignia II</a></h4>
+                    <div class="item-metrics">
+                      <span>Price: 1.5M ISK</span>
+                      <span>Volume: High</span>
+                      <span>Volatility: 19.9%</span>
+                      <span>Momentum: +10.0%</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+                </td>
+                <td style="width: 50%; vertical-align: top;">
+            <div class="grid-item">
+              <table>
+                <tr>
+                  <td style="width: 32px; vertical-align: top;">
+                    <img src="https://images.evetech.net/types/14128/icon" alt="Republic Fleet Gyrostabilizer">
+                  </td>
+                  <td class="grid-item-content" style="vertical-align: top;">
+                    <h4><a href="https://evemarketbrowser.com/region/0/type/14128" target="_blank">Republic Fleet Gyrostabilizer</a></h4>
+                    <div class="item-metrics">
+                      <span>Price: 45.2M ISK</span>
+                      <span>Volume: Medium</span>
+                      <span>Volatility: 17.3%</span>
+                      <span>Momentum: +8.4%</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+            <div class="grid-item">
+              <table>
+                <tr>
+                  <td style="width: 32px; vertical-align: top;">
+                    <img src="https://images.evetech.net/types/19191/icon" alt="Pithum A-Type Medium Shield Booster">
+                  </td>
+                  <td class="grid-item-content" style="vertical-align: top;">
+                    <h4><a href="https://evemarketbrowser.com/region/0/type/19191" target="_blank">Pithum A-Type Medium Shield Booster</a></h4>
+                    <div class="item-metrics">
+                      <span>Price: 892.0M ISK</span>
+                      <span>Volume: Very Low</span>
+                      <span>Volatility: 21.4%</span>
+                      <span>Momentum: +7.2%</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td class="grid-section">
+            <h3>Low Risk</h3>
+            <table class="grid-items">
+              <tr>
+                <td style="width: 50%; vertical-align: top;">
+            <div class="grid-item">
+              <table>
+                <tr>
+                  <td style="width: 32px; vertical-align: top;">
+                    <img src="https://images.evetech.net/types/34/icon" alt="Tritanium">
+                  </td>
+                  <td class="grid-item-content" style="vertical-align: top;">
+                    <h4><a href="https://evemarketbrowser.com/region/0/type/34" target="_blank">Tritanium</a></h4>
+                    <div class="item-metrics">
+                      <span>Price: 7 ISK</span>
+                      <span>Volume: Very High</span>
+                      <span>Volatility: 3.2%</span>
+                      <span>Momentum: +2.1%</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+            <div class="grid-item">
+              <table>
+                <tr>
+                  <td style="width: 32px; vertical-align: top;">
+                    <img src="https://images.evetech.net/types/35/icon" alt="Pyerite">
+                  </td>
+                  <td class="grid-item-content" style="vertical-align: top;">
+                    <h4><a href="https://evemarketbrowser.com/region/0/type/35" target="_blank">Pyerite</a></h4>
+                    <div class="item-metrics">
+                      <span>Price: 12 ISK</span>
+                      <span>Volume: Very High</span>
+                      <span>Volatility: 4.5%</span>
+                      <span>Momentum: +2.8%</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+                </td>
+                <td style="width: 50%; vertical-align: top;">
+            <div class="grid-item">
+              <table>
+                <tr>
+                  <td style="width: 32px; vertical-align: top;">
+                    <img src="https://images.evetech.net/types/36/icon" alt="Mexallon">
+                  </td>
+                  <td class="grid-item-content" style="vertical-align: top;">
+                    <h4><a href="https://evemarketbrowser.com/region/0/type/36" target="_blank">Mexallon</a></h4>
+                    <div class="item-metrics">
+                      <span>Price: 89 ISK</span>
+                      <span>Volume: Very High</span>
+                      <span>Volatility: 5.7%</span>
+                      <span>Momentum: +3.4%</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+            <div class="grid-item">
+              <table>
+                <tr>
+                  <td style="width: 32px; vertical-align: top;">
+                    <img src="https://images.evetech.net/types/37/icon" alt="Isogen">
+                  </td>
+                  <td class="grid-item-content" style="vertical-align: top;">
+                    <h4><a href="https://evemarketbrowser.com/region/0/type/37" target="_blank">Isogen</a></h4>
+                    <div class="item-metrics">
+                      <span>Price: 124 ISK</span>
+                      <span>Volume: High</span>
+                      <span>Volatility: 6.1%</span>
+                      <span>Momentum: +3.9%</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </div>
+        </td>
+      </tr>
+    </table>
     </div>
 
     <div class="footer">

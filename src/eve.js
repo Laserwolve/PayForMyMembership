@@ -415,37 +415,60 @@ function generateEmailReport(eveData) {
       }
       return items.map((item) => `
             <div class="grid-item">
-              <img src="https://images.evetech.net/types/${item.id}/icon" alt="${item.name}">
-              <div class="grid-item-content">
-                <h4><a href="https://evemarketbrowser.com/region/0/type/${item.id}" target="_blank">${item.name}</a></h4>
-                <div class="item-metrics">
-                  <span>Price: ${formatISK(item.currentPrice)}</span>
-                  <span>Volume: ${item.volumeCategory}</span>
-                  <span>Volatility: ${item.volatility}%</span>
-                  <span>Momentum: ${item.momentum > 0 ? '+' : ''}${item.momentum}%</span>
-                </div>
-              </div>
+              <table>
+                <tr>
+                  <td style="width: 32px; vertical-align: top;">
+                    <img src="https://images.evetech.net/types/${item.id}/icon" alt="${item.name}">
+                  </td>
+                  <td class="grid-item-content" style="vertical-align: top;">
+                    <h4><a href="https://evemarketbrowser.com/region/0/type/${item.id}" target="_blank">${item.name}</a></h4>
+                    <div class="item-metrics">
+                      <span>Price: ${formatISK(item.currentPrice)}</span>
+                      <span>Volume: ${item.volumeCategory}</span>
+                      <span>Volatility: ${item.volatility}%</span>
+                      <span>Momentum: ${item.momentum > 0 ? '+' : ''}${item.momentum}%</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
             </div>`).join('\n');
     };
 
     contentHtml = `
       <h2 style="text-align: center; margin-top: 0;">Recommendations</h2>
       
-      <div class="grid-container">
-        <div class="grid-section">
-          <h3>High Risk</h3>
-          <div class="grid-items">
-${generateItemsHtml(highRisk, 'high-risk')}
-          </div>
-        </div>
-        
-        <div class="grid-section">
-          <h3>Low Risk</h3>
-          <div class="grid-items">
-${generateItemsHtml(lowRisk, 'low-risk')}
-          </div>
-        </div>
-      </div>
+      <table class="grid-container">
+        <tr>
+          <td class="grid-section">
+            <h3>High Risk</h3>
+            <table class="grid-items">
+              <tr>
+                <td style="width: 50%; vertical-align: top;">
+${generateItemsHtml(highRisk.slice(0, 2), 'high-risk-col1')}
+                </td>
+                <td style="width: 50%; vertical-align: top;">
+${generateItemsHtml(highRisk.slice(2, 4), 'high-risk-col2')}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td class="grid-section">
+            <h3>Low Risk</h3>
+            <table class="grid-items">
+              <tr>
+                <td style="width: 50%; vertical-align: top;">
+${generateItemsHtml(lowRisk.slice(0, 2), 'low-risk-col1')}
+                </td>
+                <td style="width: 50%; vertical-align: top;">
+${generateItemsHtml(lowRisk.slice(2, 4), 'low-risk-col2')}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
     `;
   }
 

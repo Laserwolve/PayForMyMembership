@@ -504,6 +504,8 @@ function generateEmailReport(osrsData) {
 ${generateItemsHtml(highRiskMembers, 'high-risk-members')}
             </div>
           </td>
+        </tr>
+        <tr>
           <td class="grid-section">
             <h3>Low Risk — Members</h3>
             <div class="grid-items">
@@ -518,6 +520,8 @@ ${generateItemsHtml(lowRiskMembers, 'low-risk-members')}
 ${generateItemsHtml(highRiskF2P, 'high-risk-f2p')}
             </div>
           </td>
+        </tr>
+        <tr>
           <td class="grid-section">
             <h3>Low Risk — Free to Play</h3>
             <div class="grid-items">
