@@ -64,8 +64,8 @@
             background-color: #000000;
         }
         .report-container {
-            max-width: 915px;
-            width: 915px;
+            max-width: 600px;
+            width: 600px;
             margin: 0 auto;
             background-image: url('https://reports.vineyardtechnologies.org/osrs/images/background.jpg');
             background-repeat: repeat-y;
@@ -143,7 +143,7 @@
         .opinion-column p {
             line-height: 1.6;
             color: #333;
-            margin-bottom: 15px;
+            margin-bottom: 0;
         }
         .opinion-highlight {
             background: #fff3e0;
@@ -153,7 +153,7 @@
             font-style: italic;
         }
         .opinion-section {
-            margin-bottom: 20px;
+            margin-bottom: 0;
             display: flex;
             gap: 30px;
         }
@@ -195,9 +195,8 @@
         }
         .grid-container {
             width: 100%;
-            border-spacing: 10px;
+            border-spacing: 0 15px;
             margin-top: 20px;
-            table-layout: fixed;
         }
         .grid-section {
             background: #f8f9fa;
@@ -205,7 +204,7 @@
             border-radius: 8px;
             border: 2px solid #dee2e6;
             vertical-align: top;
-            width: 50%;
+            width: 100%;
         }
         .grid-section h3 {
             margin: 0 0 15px 0;
@@ -346,11 +345,21 @@
       </h3>
       
       <div class="opinion-section">
-        <img src="https://reports.vineyardtechnologies.org/osrs/images/LaserWolve.png" alt="LaserWolve">
-        <div class="opinion-text">
-          <p><em>Tuesday, October 29, 2025</em> — This week's high-risk picks are showing exceptional momentum. Members items like <a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=4087" target="_blank" style="color: #8B4513; text-decoration: none; font-weight: bold;">Dragon Platelegs</a> and <a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=4151" target="_blank" style="color: #8B4513; text-decoration: none; font-weight: bold;">Abyssal Whip</a> continue their upward trend, driven by increased PvP activity and new content updates.</p>
-          <p>For F2P traders, <a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=1127" target="_blank" style="color: #8B4513; text-decoration: none; font-weight: bold;">Rune Platebody</a> presents an interesting opportunity. The volatility spike suggests institutional buying patterns—likely players stockpiling for upcoming free-to-play tournaments.</p>
-        </div>
+        <table style="width: 100%; border-spacing: 0;">
+          <tr>
+            <td style="width: 100px; vertical-align: top; padding-right: 15px;">
+              <img src="https://reports.vineyardtechnologies.org/osrs/images/LaserWolve.png" alt="LaserWolve" style="max-width: 100px; height: auto; display: block;">
+            </td>
+            <td class="opinion-text" style="vertical-align: top;">
+              <p><em>Tuesday, October 29, 2025</em> — This week's high-risk picks are showing exceptional momentum. Members items like <a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=4087" target="_blank" style="color: #8B4513; text-decoration: none; font-weight: bold;">Dragon Platelegs</a> and <a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=4151" target="_blank" style="color: #8B4513; text-decoration: none; font-weight: bold;">Abyssal Whip</a> continue their upward trend, driven by increased PvP activity and new content updates.</p>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" class="opinion-text">
+              <p>For F2P traders, <a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=1127" target="_blank" style="color: #8B4513; text-decoration: none; font-weight: bold;">Rune Platebody</a> presents an interesting opportunity. The volatility spike suggests institutional buying patterns—likely players stockpiling for upcoming free-to-play tournaments.</p>
+            </td>
+          </tr>
+        </table>
       </div>
     </aside>
         </td>
@@ -369,6 +378,8 @@
 <p class="no-items">No items found</p>
             </div>
           </td>
+        </tr>
+        <tr>
           <td class="grid-section">
             <h3>Low Risk — Members</h3>
             <div class="grid-items">
@@ -439,6 +450,8 @@
 <p class="no-items">No items found</p>
             </div>
           </td>
+        </tr>
+        <tr>
           <td class="grid-section">
             <h3>Low Risk — Free to Play</h3>
             <div class="grid-items">
@@ -512,7 +525,7 @@
 
     <div class="footer">
         <p><em>This is speculative analysis. Trade at your own risk.</em></p>
-        <p><em><a href="https://vineyardtechnologies.org/products/mythic-market-mogul" target="_blank" style="color: #ffffff;">Mythic Market Mogul</a> and <a href="https://vineyardtechnologies.org/" target="_blank" style="color: #ffffff;">Vineyard Technologies</a> are not affiliated with <a href="https://www.jagex.com/" target="_blank" style="color: #ffffff;">Jagex Games Ltd</a>. Old School RuneScape and all related content are owned by <a href="https://www.jagex.com/" target="_blank" style="color: #ffffff;">Jagex Games Ltd</a>.</em></p>
+        <p><em><a href="https://vineyardtechnologies.org/products/mythic-market-mogul" target="_blank" style="color: #ffffff;">Mythic Market Mogul</a> and <a href="https://vineyardtechnologies.org/" target="_blank" style="color: #ffffff;">Vineyard Technologies</a> are not affiliated with <a href="https://www.jagex.com/" target="_blank" style="color: #ffffff;">Jagex Games Ltd</a>. <a href="https://oldschool.runescape.com/" target="_blank" style="color: #ffffff;">Old School RuneScape</a> and all related content are owned by <a href="https://www.jagex.com/" target="_blank" style="color: #ffffff;">Jagex Games Ltd</a>.</em></p>
     </div>
     </div>
 </body>
