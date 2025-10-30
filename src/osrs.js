@@ -45,18 +45,18 @@ const HISTORY_FILE = path.join(__dirname, '..', 'data', 'osrs-history.json');
 function loadHistoricalData() {
   if (!fs.existsSync(HISTORY_FILE)) {
     console.log('📝 Creating new history file...');
-    fs.writeFileSync(HISTORY_FILE, JSON.stringify({}, null, 2));
+    fs.writeFileSync(HISTORY_FILE, JSON.stringify({}));
     return {};
   }
   return JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8'));
 }
 
 /**
- * Saves updated historical data
+ * Saves updated historical data (minified for space efficiency)
  * @param {Object} data - Historical data to save
  */
 function saveHistoricalData(data) {
-  fs.writeFileSync(HISTORY_FILE, JSON.stringify(data, null, 2));
+  fs.writeFileSync(HISTORY_FILE, JSON.stringify(data));
 }
 
 /**
@@ -634,10 +634,20 @@ async function sendNewsletter(subscribers) {
     };
     
     console.log(`\n📧 Sending OSRS newsletter to ${subscribers.length} subscriber(s)...`);
+    console.log(`Recipients: ${subscribers.join(', ')}`);
+    console.log(`Subject: ${subject}`);
+    
     const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log(`✅ Newsletter sent successfully! Message ID: ${response.messageId}`);
+    console.log(`✅ Newsletter sent successfully!`);
+    console.log(`Message ID: ${response.messageId}`);
+    console.log(`Full response:`, JSON.stringify(response, null, 2));
   } catch (error) {
     console.error(`❌ Failed to send newsletter:`, error.message);
+    if (error.response) {
+      console.error('Error response body:', error.response.body);
+      console.error('Error status code:', error.response.statusCode);
+    }
+    console.error('Full error:', error);
     // Don't throw - newsletter failure shouldn't break the analysis
   }
 }
