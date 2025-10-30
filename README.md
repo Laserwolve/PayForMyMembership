@@ -1,17 +1,18 @@
+![Mythic Market Mogul Logo](images/mythicMarketMogulGitHubLogo.webp)
 # Mythic Market Mogul - Multi-Game Investment Analyzer
 
 A Node.js application that analyzes in-game market data to find profitable premium currency trading opportunities across multiple MMO games.
 
 ## Live Reports
 
-- **OSRS Report**: https://reports.vineyardtechnologies.org/osrs/
+- **Old School Runescape Report**: https://reports.vineyardtechnologies.org/osrs/
 - **EVE Online Report**: https://reports.vineyardtechnologies.org/eve/
 
 Updated daily with fresh market analysis and investment recommendations.
 
 ## Features
 
-### OSRS Analyzer
+### Old School Runescape Market Analysis Report
 - Fetches live item data from the OSRS item database
 - Analyzes 180-day price history for any number of items
 - Supports both F2P and Members items
@@ -28,7 +29,7 @@ Updated daily with fresh market analysis and investment recommendations.
   - Investment score (0-100)
 - Displays top 3 high-volatility, high-ROI recommendations
 
-### EVE Online Analyzer
+### EVE Online Market Analysis Report
 - Fetches all tradeable items in Jita (The Forge region)
 - Analyzes market history for dynamic item selection
 - User-customizable ISK budget (supports "2.5b", "500m", "1000k" format)
@@ -65,7 +66,6 @@ Updated daily with fresh market analysis and investment recommendations.
    - **Price movement** (40%+ price change favored)
    - **Affordability** (cheap items = buy more units)
    - Breakout patterns (bonus points)
-5. **Recommendations**: Shows top 3 items ranked by investment score
 
 ### EVE Online Analysis Process
 
@@ -87,37 +87,6 @@ Updated daily with fresh market analysis and investment recommendations.
    - **Price movement** (recent upward trends favored)
    - **Affordability** (allows purchasing multiple units)
    - Hot item breakout bonuses
-5. **Recommendations**: Shows top 3 items ranked by investment score
-
-## Investment Strategy
-
-Both analyzers target **high-volatility, high-ROI opportunities**:
-
-### OSRS Strategy
-- Looks for items with 40-50% return potential
-- Favors volatile items (20%+ volatility)
-- Prefers cheap items (can buy more units)
-- Identifies momentum breakouts
-- **NOT** a conservative strategy - this is for aggressive speculation
-
-### EVE Online Strategy
-- Focuses on high-volatility items (10%+ volatility threshold)
-- Prioritizes positive momentum and recent price trends
-- Considers market liquidity and trading volume
-- Identifies breakout patterns for speculative trading
-- **High-risk, high-reward** approach suitable for experienced traders
-
-## Output Format
-
-Both analyzers display top 3 recommendations with:
-- Investment score (0-100)
-- Current price (GP for OSRS, ISK for EVE)
-- Units you can buy within budget
-- Total investment cost
-- Price change over analysis period
-- Momentum score
-- Volatility percentage (🔥 emoji for high-volatility items)
-- Daily trading volume
 
 ## File Structure
 
