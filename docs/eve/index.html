@@ -23,7 +23,7 @@
     <meta property="twitter:description" content="Daily EVE Online market analysis with commodity and faction module trading opportunities.">
     <meta property="twitter:image" content="https://reports.vineyardtechnologies.org/eve/images/eveLogo.png">
     
-    <link rel="icon" type="image/png" href="images/MythicMarketMogulIcon.png">
+    <link rel="icon" type="image/png" href="https://reports.vineyardtechnologies.org/eve/images/MythicMarketMogulIcon.png">
     <link rel="canonical" href="https://reports.vineyardtechnologies.org/eve/">
     
     <!-- Schema.org structured data -->
@@ -62,7 +62,7 @@
             margin: 0;
             padding: 0;
             background-color: #000000;
-            background-image: url('images/space.webp');
+            background-image: url('https://reports.vineyardtechnologies.org/eve/images/space.webp');
             background-repeat: no-repeat;
             background-size: cover;
             background-position: center;
@@ -72,7 +72,7 @@
             max-width: 915px;
             width: 915px;
             margin: 0 auto;
-            background-image: url('images/background.png');
+            background-image: url('https://reports.vineyardtechnologies.org/eve/images/background.png');
             background-repeat: repeat-y;
             background-size: 100% auto;
             background-position: top center;
@@ -80,9 +80,17 @@
             padding: 32px 90px;
         }
         .main-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            width: 100%;
+        }
+        .main-table {
+            width: 100%;
+            border-spacing: 0 20px;
+        }
+        .content-cell {
+            vertical-align: top;
+        }
+        .opinion-cell {
+            vertical-align: top;
         }
         .header {
             background: #1a1a2e;
@@ -109,7 +117,6 @@
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
             border: 1px solid #2a3f5f;
-            order: 2;
         }
         .opinion-column {
             background: #1a1a2e;
@@ -118,7 +125,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
             border: 1px solid #2a3f5f;
             height: fit-content;
-            order: 1;
         }
         .opinion-column h3 {
             color: #ffffff;

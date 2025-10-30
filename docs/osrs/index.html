@@ -75,9 +75,20 @@
             padding: 32px 64px;
         }
         .main-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            width: 100%;
+        }
+        .main-table {
+            width: 100%;
+            border-spacing: 0 20px;
+        }
+        .content-cell {
+            vertical-align: top;
+            padding-right: 10px;
+        }
+        .opinion-cell {
+            vertical-align: top;
+            width: 300px;
+            padding-left: 10px;
         }
         .header {
             background: transparent;
@@ -104,7 +115,6 @@
             padding: 20px 20px;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            order: 2;
         }
         .opinion-column {
             background-image: url('https://reports.vineyardtechnologies.org/osrs/images/scrollBackground.gif');
@@ -115,7 +125,6 @@
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             height: fit-content;
-            order: 1;
         }
         .opinion-column h3 {
             color: #000000;
@@ -185,16 +194,18 @@
             margin-right: 20px;
         }
         .grid-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            width: 100%;
+            border-spacing: 10px;
             margin-top: 20px;
+            table-layout: fixed;
         }
         .grid-section {
             background: #f8f9fa;
             padding: 15px;
             border-radius: 8px;
             border: 2px solid #dee2e6;
+            vertical-align: top;
+            width: 50%;
         }
         .grid-section h3 {
             margin: 0 0 15px 0;
@@ -205,26 +216,25 @@
             border-bottom: 2px solid #dee2e6;
         }
         .grid-items {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            width: 100%;
         }
         .grid-item {
             background: white;
             padding: 12px;
             border-radius: 6px;
             border-left: 4px solid #8B4513;
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .grid-item table {
+            width: 100%;
+            border-spacing: 0;
         }
         .grid-item img {
             width: 32px;
             height: 32px;
-            flex-shrink: 0;
         }
         .grid-item-content {
-            flex: 1;
+            padding-left: 12px;
         }
         .grid-item h4 {
             margin: 0 0 8px 0;
@@ -232,15 +242,16 @@
             font-size: 1em;
         }
         .item-metrics {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+            margin-top: 5px;
         }
         .item-metrics span {
             background: #e9ecef;
             padding: 3px 6px;
             border-radius: 3px;
             font-size: 0.85em;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            display: inline-block;
         }
         .score {
             background: #28a745 !important;
@@ -326,118 +337,9 @@
     </div>
 
     <div class="main-container">
-    <div class="content">
-
-      <h2 style="text-align: center; margin-top: 0;">Recommendations</h2>
-      
-      <div class="grid-container">
-        <div class="grid-section">
-          <h3>High Risk — Members</h3>
-          <div class="grid-items">
-<p class="no-items">No items found</p>
-          </div>
-        </div>
-        
-        <div class="grid-section">
-          <h3>Low Risk — Members</h3>
-          <div class="grid-items">
-
-            <div class="grid-item">
-              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=2509" alt="Black dragon leather">
-              <div class="grid-item-content">
-                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=2509" target="_blank" style="color: #333; text-decoration: none;">Black dragon leather</a></h4>
-                <div class="item-metrics">
-                  <span>Price: 3,194 gold</span>
-                  <span>Volume: Very High</span>
-                  <span>Volatility: 0.00%</span>
-                  <span>Momentum: 0.00%</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="grid-item">
-              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=6034" alt="Supercompost">
-              <div class="grid-item-content">
-                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=6034" target="_blank" style="color: #333; text-decoration: none;">Supercompost</a></h4>
-                <div class="item-metrics">
-                  <span>Price: 44 gold</span>
-                  <span>Volume: Very High</span>
-                  <span>Volatility: 0.00%</span>
-                  <span>Momentum: 0.00%</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="grid-item">
-              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=5032" alt="Shirt (yellow)">
-              <div class="grid-item-content">
-                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=5032" target="_blank" style="color: #333; text-decoration: none;">Shirt (yellow)</a></h4>
-                <div class="item-metrics">
-                  <span>Price: 1,085 gold</span>
-                  <span>Volume: Very Low</span>
-                  <span>Volatility: 0.00%</span>
-                  <span>Momentum: 0.00%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="grid-section">
-          <h3>High Risk — Free to Play</h3>
-          <div class="grid-items">
-<p class="no-items">No items found</p>
-          </div>
-        </div>
-        
-        <div class="grid-section">
-          <h3>Low Risk — Free to Play</h3>
-          <div class="grid-items">
-
-            <div class="grid-item">
-              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=13044" alt="Zamorak armour set (lg)">
-              <div class="grid-item-content">
-                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=13044" target="_blank" style="color: #333; text-decoration: none;">Zamorak armour set (lg)</a></h4>
-                <div class="item-metrics">
-                  <span>Price: 830,853 gold</span>
-                  <span>Volume: Very Low</span>
-                  <span>Volatility: 0.00%</span>
-                  <span>Momentum: 0.00%</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="grid-item">
-              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=558" alt="Mind rune">
-              <div class="grid-item-content">
-                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=558" target="_blank" style="color: #333; text-decoration: none;">Mind rune</a></h4>
-                <div class="item-metrics">
-                  <span>Price: 2 gold</span>
-                  <span>Volume: Very High</span>
-                  <span>Volatility: 0.00%</span>
-                  <span>Momentum: 0.00%</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="grid-item">
-              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=4345" alt="Team-16 cape">
-              <div class="grid-item-content">
-                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=4345" target="_blank" style="color: #333; text-decoration: none;">Team-16 cape</a></h4>
-                <div class="item-metrics">
-                  <span>Price: 93 gold</span>
-                  <span>Volume: Very Low</span>
-                  <span>Volatility: 0.00%</span>
-                  <span>Momentum: 0.00%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    
-    </div>
-    
+    <table class="main-table">
+      <tr>
+        <td>
     <aside class="opinion-column">
       <h3>
         <span>LaserWolve says:</span>
@@ -451,6 +353,161 @@
         </div>
       </div>
     </aside>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="content">
+
+      <h2 style="text-align: center; margin-top: 0;">Recommendations</h2>
+      
+      <table class="grid-container">
+        <tr>
+          <td class="grid-section">
+            <h3>High Risk — Members</h3>
+            <div class="grid-items">
+<p class="no-items">No items found</p>
+            </div>
+          </td>
+          <td class="grid-section">
+            <h3>Low Risk — Members</h3>
+            <div class="grid-items">
+
+            <div class="grid-item">
+              <table>
+                <tr>
+                  <td style="width: 32px; vertical-align: top;">
+                    <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=2509" alt="Black dragon leather">
+                  </td>
+                  <td class="grid-item-content" style="vertical-align: top;">
+                    <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=2509" target="_blank" style="color: #333; text-decoration: none;">Black dragon leather</a></h4>
+                    <div class="item-metrics">
+                      <span>Price: 3,194 gold</span>
+                      <span>Volume: Very High</span>
+                      <span>Volatility: 0.00%</span>
+                      <span>Momentum: 0.00%</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+            <div class="grid-item">
+              <table>
+                <tr>
+                  <td style="width: 32px; vertical-align: top;">
+                    <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=6034" alt="Supercompost">
+                  </td>
+                  <td class="grid-item-content" style="vertical-align: top;">
+                    <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=6034" target="_blank" style="color: #333; text-decoration: none;">Supercompost</a></h4>
+                    <div class="item-metrics">
+                      <span>Price: 44 gold</span>
+                      <span>Volume: Very High</span>
+                      <span>Volatility: 0.00%</span>
+                      <span>Momentum: 0.00%</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+            <div class="grid-item">
+              <table>
+                <tr>
+                  <td style="width: 32px; vertical-align: top;">
+                    <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=5032" alt="Shirt (yellow)">
+                  </td>
+                  <td class="grid-item-content" style="vertical-align: top;">
+                    <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=5032" target="_blank" style="color: #333; text-decoration: none;">Shirt (yellow)</a></h4>
+                    <div class="item-metrics">
+                      <span>Price: 1,085 gold</span>
+                      <span>Volume: Very Low</span>
+                      <span>Volatility: 0.00%</span>
+                      <span>Momentum: 0.00%</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="grid-section">
+            <h3>High Risk — Free to Play</h3>
+            <div class="grid-items">
+<p class="no-items">No items found</p>
+            </div>
+          </td>
+          <td class="grid-section">
+            <h3>Low Risk — Free to Play</h3>
+            <div class="grid-items">
+
+            <div class="grid-item">
+              <table>
+                <tr>
+                  <td style="width: 32px; vertical-align: top;">
+                    <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=13044" alt="Zamorak armour set (lg)">
+                  </td>
+                  <td class="grid-item-content" style="vertical-align: top;">
+                    <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=13044" target="_blank" style="color: #333; text-decoration: none;">Zamorak armour set (lg)</a></h4>
+                    <div class="item-metrics">
+                      <span>Price: 830,853 gold</span>
+                      <span>Volume: Very Low</span>
+                      <span>Volatility: 0.00%</span>
+                      <span>Momentum: 0.00%</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+            <div class="grid-item">
+              <table>
+                <tr>
+                  <td style="width: 32px; vertical-align: top;">
+                    <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=558" alt="Mind rune">
+                  </td>
+                  <td class="grid-item-content" style="vertical-align: top;">
+                    <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=558" target="_blank" style="color: #333; text-decoration: none;">Mind rune</a></h4>
+                    <div class="item-metrics">
+                      <span>Price: 2 gold</span>
+                      <span>Volume: Very High</span>
+                      <span>Volatility: 0.00%</span>
+                      <span>Momentum: 0.00%</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+            <div class="grid-item">
+              <table>
+                <tr>
+                  <td style="width: 32px; vertical-align: top;">
+                    <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=4345" alt="Team-16 cape">
+                  </td>
+                  <td class="grid-item-content" style="vertical-align: top;">
+                    <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=4345" target="_blank" style="color: #333; text-decoration: none;">Team-16 cape</a></h4>
+                    <div class="item-metrics">
+                      <span>Price: 93 gold</span>
+                      <span>Volume: Very Low</span>
+                      <span>Volatility: 0.00%</span>
+                      <span>Momentum: 0.00%</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            </div>
+          </td>
+        </tr>
+      </table>
+    
+    </div>
+        </td>
+      </tr>
+    </table>
     </div>
 
     <div class="footer">

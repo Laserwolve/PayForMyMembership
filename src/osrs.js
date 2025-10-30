@@ -474,51 +474,58 @@ function generateEmailReport(osrsData) {
       }
       return items.map((item) => `
             <div class="grid-item">
-              <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=${item.id}" alt="${item.name}">
-              <div class="grid-item-content">
-                <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=${item.id}" target="_blank" style="color: #333; text-decoration: none;">${item.name}</a></h4>
-                <div class="item-metrics">
-                  <span>Price: ${formatGP(item.currentPrice)}</span>
-                  <span>Volume: ${item.volumeCategory}</span>
-                  <span>Volatility: ${item.volatility}%</span>
-                  <span>Momentum: ${item.momentum > 0 ? '+' : ''}${item.momentum}%</span>
-                </div>
-              </div>
+              <table>
+                <tr>
+                  <td style="width: 32px; vertical-align: top;">
+                    <img src="https://secure.runescape.com/m=itemdb_oldschool/1761737389524_obj_sprite.gif?id=${item.id}" alt="${item.name}">
+                  </td>
+                  <td class="grid-item-content" style="vertical-align: top;">
+                    <h4><a href="https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj=${item.id}" target="_blank" style="color: #333; text-decoration: none;">${item.name}</a></h4>
+                    <div class="item-metrics">
+                      <span>Price: ${formatGP(item.currentPrice)}</span>
+                      <span>Volume: ${item.volumeCategory}</span>
+                      <span>Volatility: ${item.volatility}%</span>
+                      <span>Momentum: ${item.momentum > 0 ? '+' : ''}${item.momentum}%</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
             </div>`).join('\n');
     };
 
     contentHtml = `
       <h2 style="text-align: center; margin-top: 0;">Recommendations</h2>
       
-      <div class="grid-container">
-        <div class="grid-section">
-          <h3>High Risk — Members</h3>
-          <div class="grid-items">
+      <table class="grid-container">
+        <tr>
+          <td class="grid-section">
+            <h3>High Risk — Members</h3>
+            <div class="grid-items">
 ${generateItemsHtml(highRiskMembers, 'high-risk-members')}
-          </div>
-        </div>
-        
-        <div class="grid-section">
-          <h3>Low Risk — Members</h3>
-          <div class="grid-items">
+            </div>
+          </td>
+          <td class="grid-section">
+            <h3>Low Risk — Members</h3>
+            <div class="grid-items">
 ${generateItemsHtml(lowRiskMembers, 'low-risk-members')}
-          </div>
-        </div>
-        
-        <div class="grid-section">
-          <h3>High Risk — Free to Play</h3>
-          <div class="grid-items">
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="grid-section">
+            <h3>High Risk — Free to Play</h3>
+            <div class="grid-items">
 ${generateItemsHtml(highRiskF2P, 'high-risk-f2p')}
-          </div>
-        </div>
-        
-        <div class="grid-section">
-          <h3>Low Risk — Free to Play</h3>
-          <div class="grid-items">
+            </div>
+          </td>
+          <td class="grid-section">
+            <h3>Low Risk — Free to Play</h3>
+            <div class="grid-items">
 ${generateItemsHtml(lowRiskF2P, 'low-risk-f2p')}
-          </div>
-        </div>
-      </div>
+            </div>
+          </td>
+        </tr>
+      </table>
     `;
   }
 
