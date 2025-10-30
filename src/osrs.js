@@ -347,16 +347,10 @@ export async function runOSRSAutomated(options = {}) {
   }
 
   // Filter items - include both members and F2P
-  // Only consider items with at least 10 million gold in trade volume
   const allItems = Object.entries(itemsData)
     .filter(([id, item]) => {
+      // Only require basic data to be present
       if (!item.name || item.price === undefined || item.volume === undefined) {
-        return false;
-      }
-      // Calculate total trade value (price * volume)
-      const tradeValue = item.price * item.volume;
-      // Require at least 10 million gold in trade
-      if (tradeValue < 10000000) {
         return false;
       }
       return true;
@@ -578,7 +572,16 @@ async function loadSubscribers() {
     return emails;
   } catch (error) {
     console.error('❌ Failed to load subscribers from Brevo:', error.message);
-    return [];
+    if (error.response) {
+      console.error('Response data:', error.response.body);
+      console.error('Status code:', error.response.statusCode);
+    }
+    console.log('\n💡 TIP: List ID 4 may not exist. Falling back to test mode.');
+    console.log('    Add your email below or create list ID 4 in Brevo dashboard.');
+    
+    // TEMPORARY: Return a test email for development
+    // Replace with your email or remove this once you fix the list ID
+    return ['laserwolve@gmail.com']; // TODO: Replace with your actual email or fix list ID
   }
 }
 
